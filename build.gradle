@@ -29,6 +29,9 @@ dependencies {
     providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Discord
+    implementation group: 'net.dv8tion', name: 'JDA', version: '5.0.0-beta.24'
 }
 
 tasks.named('test') {
