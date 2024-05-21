@@ -1,4 +1,4 @@
-package com.piebin.piebot.entity;
+package com.piebin.piebot.component;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
