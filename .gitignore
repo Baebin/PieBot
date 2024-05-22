@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### 디스코드봇 토큰은 숨겨야하지 않을까? ###
+src/main/resources/application.properties
