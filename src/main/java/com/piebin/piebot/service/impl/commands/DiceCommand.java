@@ -1,6 +1,6 @@
 package com.piebin.piebot.service.impl.commands;
 
-import com.piebin.piebot.model.entity.CommandErrorSentence;
+import com.piebin.piebot.model.entity.CommandSentence;
 import com.piebin.piebot.model.entity.Sentence;
 import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.utility.CommandHelper;
@@ -24,12 +24,11 @@ public class DiceCommand implements PieCommand {
         if (args.size() >= 2) {
             try {
                 int range = Integer.parseInt(args.get(2));
-                System.out.println(range);
                 String message = Sentence.COMMAND_DICE_RESULT.getMessage() + " : " + (new Random().nextInt(range) + 1);
                 channel.sendMessage(message).queue();
                 return;
             } catch (Exception e) {}
         }
-        CommandHelper.printCommandErrorMessage(channel, CommandErrorSentence.DICE_ARG1);
+        CommandHelper.printCommandErrorMessage(channel, CommandSentence.DICE_ARG1);
     }
 }

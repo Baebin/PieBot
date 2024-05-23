@@ -18,6 +18,8 @@ public class HelpCommand implements PieCommand {
         embedBuilder.setColor(Color.GREEN);
 
         for (CommandParameter parameter : CommandParameter.values()) {
+            if (parameter.getArgs() != null && parameter.getArgs().equals("Secret"))
+                continue;
             String command = CommandServiceImpl.PREFIX + " " + Arrays.toString(parameter.getData());
             if (parameter.getArgs() != null)
                 command += " " + parameter.getArgs();

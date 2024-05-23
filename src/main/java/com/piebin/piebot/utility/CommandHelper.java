@@ -1,7 +1,6 @@
 package com.piebin.piebot.utility;
 
-import com.piebin.piebot.model.entity.CommandErrorSentence;
-import com.piebin.piebot.model.entity.Sentence;
+import com.piebin.piebot.model.entity.CommandSentence;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -23,15 +22,15 @@ public class CommandHelper {
         channel.sendMessageEmbeds(embedBuilder.build()).queue();
     }
 
-    public static void printErrorMessage(TextChannel channel, String title, String name, String value) {
-        EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setTitle(title);
-        embedBuilder.addField(name, value, false);
-        embedBuilder.setColor(Color.RED);
-        channel.sendMessageEmbeds(embedBuilder.build()).queue();
+    public static void printCommandMessage(TextChannel channel, CommandSentence sentence, Color color) {
+        printEmbedMessage(channel, sentence.getTitle(), sentence.getMessage(), sentence.getDescription(), color);
     }
 
-    public static void printCommandErrorMessage(TextChannel channel, CommandErrorSentence sentence) {
+    public static void printErrorMessage(TextChannel channel, String title, String name, String value) {
+        printEmbedMessage(channel, title, name, value, Color.RED);
+    }
+
+    public static void printCommandErrorMessage(TextChannel channel, CommandSentence sentence) {
         printErrorMessage(channel, sentence.getTitle(), sentence.getMessage(), sentence.getDescription());
     }
 }
