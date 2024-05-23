@@ -27,6 +27,7 @@ out/
 !**/src/test/**/out/
 
 application-token.properties
+application-mariadb.properties
 
 ### NetBeans ###
 /nbproject/private/
