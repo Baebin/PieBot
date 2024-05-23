@@ -1,10 +1,16 @@
 package com.piebin.piebot.service.impl;
 
+import com.piebin.piebot.model.domain.Account;
+import com.piebin.piebot.model.domain.EasterEgg;
 import com.piebin.piebot.model.entity.CommandMode;
 import com.piebin.piebot.model.entity.CommandParameter;
+import com.piebin.piebot.model.entity.CommandSentence;
 import com.piebin.piebot.model.entity.EmbedSentence;
+import com.piebin.piebot.model.repository.AccountRepository;
+import com.piebin.piebot.model.repository.EasterEggRepository;
 import com.piebin.piebot.service.CommandService;
 import com.piebin.piebot.service.PieCommand;
+import com.piebin.piebot.service.impl.commands.EmbedPrintCommand;
 import com.piebin.piebot.utility.EmbedMessageHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +20,11 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.*;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -24,7 +32,8 @@ import java.util.List;
 public class CommandServiceImpl implements CommandService {
     public static final String PREFIX = "ㅋ";
 
-    private final AccountServiceImpl accountService;
+    private final AccountRepository accountRepository;
+    private final EasterEggRepository easterEggRepository;
 
     private boolean checkArg(String arg, CommandParameter commandParameter) {
         for (String data : commandParameter.getData()) {
@@ -36,7 +45,12 @@ public class CommandServiceImpl implements CommandService {
         return false;
     }
 
+    private boolean isEasterEgg(CommandParameter parameter) {
+        return parameter.getDescription().contains("Easter Egg");
+    }
+
     @Override
+    @Transactional
     public void run(MessageReceivedEvent event) {
         User user = event.getAuthor();
         if (user.isBot())
@@ -50,7 +64,7 @@ public class CommandServiceImpl implements CommandService {
             for (CommandParameter parameter : CommandParameter.values()) {
                 if (!checkArg(args.get(1), parameter))
                     continue;
-                if (!accountService.existsUser(user.getId())) {
+                if (!accountRepository.existsById(user.getId())) {
                     TextChannel channel = event.getChannel().asTextChannel();
                     Message message = EmbedMessageHelper.printEmbedMessage(channel, EmbedSentence.REGISTER, Color.GREEN);
                     message.addReaction(Emoji.fromUnicode("✅")).queue();
@@ -60,8 +74,31 @@ public class CommandServiceImpl implements CommandService {
                 }
                 PieCommand command = parameter.getCommand();
                 command.execute(event);
+
+                // Easter Egg
+                if (isEasterEgg(parameter)) {
+                    recordEasterEgg(user.getId(), ((EmbedPrintCommand)parameter.getCommand()).getSentence(), event.getMessage());
+                }
                 break;
             }
         }
+    }
+
+    @Override
+    @Transactional
+    public void recordEasterEgg(String id, CommandSentence sentence, Message message) {
+        if (easterEggRepository.existsBySentence(sentence))
+            return;
+        Optional<Account> optional = accountRepository.findById(id);
+        if (optional.isEmpty())
+            return;
+        Account account = optional.get();
+        EasterEgg easterEgg = EasterEgg.builder()
+                .account(account)
+                .sentence(sentence)
+                .build();
+        easterEggRepository.save(easterEgg);
+
+        message.replyEmbeds(EmbedMessageHelper.getEmbedBuilder(EmbedSentence.EASTER_EGG_FIND, Color.CYAN).build()).queue();
     }
 }

@@ -3,6 +3,9 @@ package com.piebin.piebot.controller;
 import com.piebin.piebot.component.DiscordBotToken;
 import com.piebin.piebot.listener.CommandListener;
 import com.piebin.piebot.listener.ReactionListener;
+import com.piebin.piebot.model.repository.AccountRepository;
+import com.piebin.piebot.model.repository.EasterEggRepository;
+import com.piebin.piebot.service.AccountService;
 import com.piebin.piebot.service.impl.AccountServiceImpl;
 import com.piebin.piebot.service.impl.CommandServiceImpl;
 import com.piebin.piebot.service.impl.ReactionServiceImpl;
@@ -23,7 +26,10 @@ public class DiscordBotController {
     private static final String API = "/api/bot/";
 
     private final DiscordBotToken token;
+
     private final AccountServiceImpl accountService;
+    private final AccountRepository accountRepository;
+    private final EasterEggRepository easterEggRepository;
 
     private static JDA jda;
 
@@ -37,7 +43,7 @@ public class DiscordBotController {
                 .setActivity(Activity.playing("나는 바보"))
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT)
                 .addEventListeners(
-                        new CommandListener(new CommandServiceImpl(accountService)),
+                        new CommandListener(new CommandServiceImpl(accountRepository, easterEggRepository)),
                         new ReactionListener(new ReactionServiceImpl(accountService))
                 )
                 .build();

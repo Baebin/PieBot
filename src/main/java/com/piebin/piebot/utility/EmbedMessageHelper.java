@@ -20,7 +20,7 @@ public class EmbedMessageHelper {
         return Arrays.asList(event.getMessage().getContentRaw().split(" "));
     }
 
-    public static EmbedBuilder getEmbedBuilder(TextChannel channel, String title, String name, String value, Color color) {
+    public static EmbedBuilder getEmbedBuilder(String title, String name, String value, Color color) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setTitle(title);
         embedBuilder.addField(name, value, false);
@@ -28,7 +28,7 @@ public class EmbedMessageHelper {
         return embedBuilder;
     }
 
-    public static EmbedBuilder getEmbedBuilder(TextChannel channel, EmbedSentence sentence, Color color) {
+    public static EmbedBuilder getEmbedBuilder(EmbedSentence sentence, Color color) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setTitle(sentence.getTitle());
         embedBuilder.addField(sentence.getMessage(), sentence.getDescription(), false);
@@ -37,7 +37,7 @@ public class EmbedMessageHelper {
     }
 
     public static Message printEmbedMessage(TextChannel channel, String title, String name, String value, Color color) {
-        EmbedBuilder embedBuilder = getEmbedBuilder(channel, title, name, value, color);
+        EmbedBuilder embedBuilder = getEmbedBuilder(title, name, value, color);
         return channel.sendMessageEmbeds(embedBuilder.build()).complete();
     }
 

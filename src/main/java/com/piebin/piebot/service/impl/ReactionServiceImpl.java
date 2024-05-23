@@ -33,11 +33,11 @@ public class ReactionServiceImpl implements ReactionService {
         try {
             accountService.register(event.getGuild().retrieveMemberById(userId).complete(), channel);
             message.editMessageEmbeds(
-                    EmbedMessageHelper.getEmbedBuilder(event.getChannel().asTextChannel(), EmbedSentence.REGISTER_COMPLETED, Color.GREEN).build()
+                    EmbedMessageHelper.getEmbedBuilder( EmbedSentence.REGISTER_COMPLETED, Color.GREEN).build()
             ).queue();
         } catch (AccountException e) {
             message.editMessageEmbeds(
-                    EmbedMessageHelper.getEmbedBuilder(event.getChannel().asTextChannel(), EmbedSentence.REGISTER_ALREADY_EXISTS, Color.RED).build()
+                    EmbedMessageHelper.getEmbedBuilder(EmbedSentence.REGISTER_ALREADY_EXISTS, Color.RED).build()
             ).queue();
         }
         EmbedMessageHelper.receiver.remove(messageId);
