@@ -2,7 +2,10 @@ package com.piebin.piebot.controller;
 
 import com.piebin.piebot.component.DiscordBotToken;
 import com.piebin.piebot.listener.CommandListener;
+import com.piebin.piebot.listener.ReactionListener;
+import com.piebin.piebot.service.impl.AccountServiceImpl;
 import com.piebin.piebot.service.impl.CommandServiceImpl;
+import com.piebin.piebot.service.impl.ReactionServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
@@ -20,6 +23,7 @@ public class DiscordBotController {
     private static final String API = "/api/bot/";
 
     private final DiscordBotToken token;
+    private final AccountServiceImpl accountService;
 
     private static JDA jda;
 
@@ -32,7 +36,10 @@ public class DiscordBotController {
         jda = JDABuilder.createDefault(token.getToken())
                 .setActivity(Activity.playing("나는 바보"))
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT)
-                .addEventListeners(new CommandListener(new CommandServiceImpl()))
+                .addEventListeners(
+                        new CommandListener(new CommandServiceImpl(accountService)),
+                        new ReactionListener(new ReactionServiceImpl(accountService))
+                )
                 .build();
         status = true;
         log.info("Discord Bot Started");

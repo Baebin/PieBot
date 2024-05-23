@@ -3,5 +3,5 @@ package com.piebin.piebot.service;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public interface CommandService {
-    void runCommand(MessageReceivedEvent event);
+    void run(MessageReceivedEvent event);
 }

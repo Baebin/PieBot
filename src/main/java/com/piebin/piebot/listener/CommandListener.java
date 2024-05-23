@@ -14,7 +14,6 @@ public class CommandListener extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         super.onMessageReceived(event);
-
-        commandService.runCommand(event);
+        commandService.run(event);
     }
 }
