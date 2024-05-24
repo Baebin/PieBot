@@ -28,6 +28,7 @@ public class HelpCommand implements PieCommand {
         switch (page) {
             case 1:
                 embedBuilder.setTitle(Sentence.HELP_1.getMessage());
+                addField(embedBuilder, CommandParameter.PAY);
                 addField(embedBuilder, CommandParameter.PROFILE);
                 addField(embedBuilder, CommandParameter.HELP);
                 break;

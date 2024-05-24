@@ -10,6 +10,7 @@ import lombok.Getter;
 public enum CommandParameter {
     PROFILE(null, new String[] { "profile", "프로필" }, null, "프로필을 보여줍니다.", CommandMode.EQUAL),
     HELP(new HelpCommand(), new String[] { "help", "도움말", "명령어" }, null, "명령어 목록을 보여줍니다.", CommandMode.EQUAL),
+    PAY(null, new String[] { "pay", "송금" }, null, "상대방에게 돈을 송금합니다.", CommandMode.EQUAL),
 
     BABO(new BaboCommand(), new String[] { "babo", "바보" }, null, "바보를 출력합니다.", CommandMode.EQUAL),
     DICE(new DiceCommand(), new String[] { "dice", "주사위" }, "[2~100]", "주사위를 굴립니다.", CommandMode.EQUAL),

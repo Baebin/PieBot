@@ -6,21 +6,10 @@ import com.piebin.piebot.model.entity.EmbedSentence;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.awt.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class EmbedMessageHelper {
-    public static Map<String, String> receiver = new HashMap<>();
-
-    public static List<String> getArgs(MessageReceivedEvent event) {
-        return Arrays.asList(event.getMessage().getContentRaw().split(" "));
-    }
-
     public static EmbedBuilder getEmbedBuilder(String title, String name, String value, Color color) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setTitle(title);
@@ -37,6 +26,38 @@ public class EmbedMessageHelper {
         return embedBuilder;
     }
 
+    /*
+    Reply
+    */
+    public static Message replyEmbedMessage(Message message, String title, String name, String value, Color color) {
+        EmbedBuilder embedBuilder = getEmbedBuilder(title, name, value, color);
+        return message.replyEmbeds(embedBuilder.build()).complete();
+    }
+
+    public static Message replyEmbedMessage(Message message, EmbedDto dto) {
+        EmbedBuilder embedBuilder = getEmbedBuilder(dto.getTitle(), dto.getMessage(), dto.getDescription(), dto.getColor());
+        return message.replyEmbeds(embedBuilder.build()).complete();
+    }
+
+    public static Message replyEmbedMessage(Message message, EmbedSentence sentence, Color color) {
+        return replyEmbedMessage(message, sentence.getTitle(), sentence.getMessage(), sentence.getDescription(), color);
+    }
+
+    public static Message replyCommandMessage(Message message, CommandSentence sentence, Color color) {
+        return replyEmbedMessage(message, sentence.getTitle(), sentence.getMessage(), sentence.getDescription(), color);
+    }
+
+    public static Message replyErrorMessage(Message message, String title, String name, String value) {
+        return replyEmbedMessage(message, title, name, value, Color.RED);
+    }
+
+    public static Message replyCommandErrorMessage(Message message, CommandSentence sentence) {
+        return replyEmbedMessage(message, sentence.getTitle(), sentence.getMessage(), sentence.getDescription(), Color.RED);
+    }
+
+    /*
+    Print
+    */
     public static Message printEmbedMessage(TextChannel channel, String title, String name, String value, Color color) {
         EmbedBuilder embedBuilder = getEmbedBuilder(title, name, value, color);
         return channel.sendMessageEmbeds(embedBuilder.build()).complete();

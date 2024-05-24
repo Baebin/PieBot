@@ -2,7 +2,6 @@ package com.piebin.piebot.service.impl;
 
 import com.piebin.piebot.component.DiscordBotInfo;
 import com.piebin.piebot.exception.AccountException;
-import com.piebin.piebot.model.entity.CommandSentence;
 import com.piebin.piebot.model.entity.EmbedSentence;
 import com.piebin.piebot.model.entity.Sentence;
 import com.piebin.piebot.service.AccountService;
@@ -40,7 +39,6 @@ public class ReactionServiceImpl implements ReactionService {
         if (!authorId.equals(botInfo.getBotId()))
             return;
         String userId = event.getUserId();
-        String messageId = event.getMessageId();
 
         TextChannel channel = event.getChannel().asTextChannel();
         Message message = event.retrieveMessage().complete();
@@ -57,7 +55,10 @@ public class ReactionServiceImpl implements ReactionService {
             return;
         }
         if (title.startsWith(Sentence.REGISTER.getMessage())) {
-            String receiverId = EmbedMessageHelper.receiver.getOrDefault(messageId, null);
+            Message rMessage = message.getReferencedMessage();
+            if (rMessage == null)
+                return;
+            String receiverId = rMessage.getAuthor().getId();
             if (receiverId == null)
                 return;
             if (!userId.equals(receiverId))
@@ -73,9 +74,7 @@ public class ReactionServiceImpl implements ReactionService {
                         EmbedMessageHelper.getEmbedBuilder(EmbedSentence.REGISTER_ALREADY_EXISTS, Color.RED).build()
                 ).queue();
             }
-            EmbedMessageHelper.receiver.remove(messageId);
             return;
         }
-
     }
 }

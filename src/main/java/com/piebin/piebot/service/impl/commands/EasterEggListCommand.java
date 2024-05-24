@@ -9,14 +9,11 @@ import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.utility.DateTimeManager;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.*;
-import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +52,6 @@ public class EasterEggListCommand implements PieCommand {
         if (totalCnt % 3 != 0)
             for (long i = 1; i <= empty; i++)
                 embedBuilder.addBlankField(true);
-        TextChannel channel = event.getChannel().asTextChannel();;
-        channel.sendMessageEmbeds(embedBuilder.build()).queue();
+        event.getMessage().replyEmbeds(embedBuilder.build()).queue();
     }
 }

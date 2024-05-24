@@ -12,7 +12,9 @@ import com.piebin.piebot.model.repository.EasterEggWordRepository;
 import com.piebin.piebot.service.CommandService;
 import com.piebin.piebot.service.impl.commands.EasterEggCommand;
 import com.piebin.piebot.service.impl.commands.EasterEggListCommand;
+import com.piebin.piebot.service.impl.commands.PayCommand;
 import com.piebin.piebot.service.impl.commands.ProfileCommand;
+import com.piebin.piebot.utility.CommandManager;
 import com.piebin.piebot.utility.EmbedMessageHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,7 +58,7 @@ public class CommandServiceImpl implements CommandService {
         User user = event.getAuthor();
         if (user.isBot())
             return;
-        List<String> args = EmbedMessageHelper.getArgs(event);
+        List<String> args = CommandManager.getArgs(event);
         log.info("user: {}, args: {}", user, args);
 
         if (args.get(0).equals(PREFIX) || args.get(0).equalsIgnoreCase(PREFIX_ENGLISH)) {
@@ -76,13 +78,13 @@ public class CommandServiceImpl implements CommandService {
                 if (!checkArg(args.get(1), parameter))
                     continue;
                 if (!accountRepository.existsById(user.getId())) {
-                    Message message = EmbedMessageHelper.printEmbedMessage(channel, EmbedSentence.REGISTER, Color.GREEN);
+                    Message message = EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.REGISTER, Color.GREEN);
                     message.addReaction(UniEmoji.CHECK.getEmoji()).queue();
-
-                    EmbedMessageHelper.receiver.put(message.getId(), user.getId());
                     return;
                 }
-                if (parameter == CommandParameter.PROFILE)
+                if (parameter == CommandParameter.PAY)
+                    new PayCommand(accountRepository).execute(event);
+                else if (parameter == CommandParameter.PROFILE)
                     new ProfileCommand(accountRepository).execute(event);
                 else if (parameter == CommandParameter.SECRET_EASTEREGG)
                     new EasterEggCommand(easterEggRepository).execute(event);
