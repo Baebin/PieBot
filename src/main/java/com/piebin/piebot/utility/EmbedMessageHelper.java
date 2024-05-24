@@ -1,5 +1,6 @@
 package com.piebin.piebot.utility;
 
+import com.piebin.piebot.model.dto.embed.EmbedDto;
 import com.piebin.piebot.model.entity.CommandSentence;
 import com.piebin.piebot.model.entity.EmbedSentence;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -39,6 +40,10 @@ public class EmbedMessageHelper {
     public static Message printEmbedMessage(TextChannel channel, String title, String name, String value, Color color) {
         EmbedBuilder embedBuilder = getEmbedBuilder(title, name, value, color);
         return channel.sendMessageEmbeds(embedBuilder.build()).complete();
+    }
+
+    public static Message printEmbedMessage(TextChannel channel, EmbedDto dto) {
+        return printEmbedMessage(channel, dto.getTitle(), dto.getMessage(), dto.getDescription(), dto.getColor());
     }
 
     public static Message printEmbedMessage(TextChannel channel, EmbedSentence sentence, Color color) {

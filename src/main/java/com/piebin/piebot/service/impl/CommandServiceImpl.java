@@ -6,15 +6,13 @@ import com.piebin.piebot.model.domain.EasterEggHistory;
 import com.piebin.piebot.model.domain.EasterEggWord;
 import com.piebin.piebot.model.entity.CommandMode;
 import com.piebin.piebot.model.entity.CommandParameter;
-import com.piebin.piebot.model.entity.CommandSentence;
 import com.piebin.piebot.model.entity.EmbedSentence;
 import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.model.repository.EasterEggHistoryRepository;
 import com.piebin.piebot.model.repository.EasterEggRepository;
 import com.piebin.piebot.model.repository.EasterEggWordRepository;
 import com.piebin.piebot.service.CommandService;
-import com.piebin.piebot.service.PieCommand;
-import com.piebin.piebot.service.impl.commands.EmbedPrintCommand;
+import com.piebin.piebot.service.impl.commands.EasterEggCommand;
 import com.piebin.piebot.utility.EmbedMessageHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -84,8 +82,9 @@ public class CommandServiceImpl implements CommandService {
                     EmbedMessageHelper.receiver.put(message.getId(), user.getId());
                     return;
                 }
-                PieCommand command = parameter.getCommand();
-                command.execute(event);
+                if (parameter == CommandParameter.SECRET_EASTEREGG)
+                    new EasterEggCommand(easterEggRepository).execute(event);
+                else parameter.getCommand().execute(event);
                 break;
             }
         }
