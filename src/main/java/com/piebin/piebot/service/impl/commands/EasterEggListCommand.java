@@ -2,14 +2,21 @@ package com.piebin.piebot.service.impl.commands;
 
 import com.piebin.piebot.model.domain.EasterEgg;
 import com.piebin.piebot.model.domain.EasterEggHistory;
+import com.piebin.piebot.model.entity.CommandParameter;
 import com.piebin.piebot.model.entity.Sentence;
+import com.piebin.piebot.model.entity.UniEmoji;
 import com.piebin.piebot.model.repository.EasterEggHistoryRepository;
 import com.piebin.piebot.model.repository.EasterEggRepository;
+import com.piebin.piebot.service.PageService;
 import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.utility.DateTimeManager;
+import com.piebin.piebot.utility.EmojiManager;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,16 +26,27 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Component
 @RequiredArgsConstructor
-public class EasterEggListCommand implements PieCommand {
+public class EasterEggListCommand implements PieCommand, PageService {
     private final EasterEggRepository easterEggRepository;
     private final EasterEggHistoryRepository easterEggHistoryRepository;
 
-    @Override
+    private void addField(EmbedBuilder embedBuilder, long i, EasterEggHistory history) {
+        if (history == null)
+            embedBuilder.addField(i + ". ???", "미발견", true);
+        else {
+            EasterEgg easterEgg = history.getEasterEgg();
+            String time = DateTimeManager.getDate(history.getRegDate());
+            String description = "[" + time + "] " + history.getAccount().getName();
+            embedBuilder.addField(i + ". " + easterEgg.getTitle(), description, true);
+        }
+    }
+
     @Transactional(readOnly = true)
-    public void execute(MessageReceivedEvent event) {
+    public EmbedBuilder getPage(int page) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setTitle(Sentence.EASTER_EGG_LIST.getMessage());
+        embedBuilder.setTitle(Sentence.EASTER_EGG_LIST.getMessage() + " - " + page);
         embedBuilder.setColor(Color.GREEN);
 
         long totalCnt = easterEggRepository.count();
@@ -37,21 +55,33 @@ public class EasterEggListCommand implements PieCommand {
         Map<Long, EasterEggHistory> historyMap = new HashMap<>();
         for (EasterEggHistory history : histories)
             historyMap.put(history.getEasterEgg().getIdx(), history);
-        for (long i = 1; i <= totalCnt; i++) {
+
+        int from = (page - 1) * 15 + 1;
+        int to = (page) * 15;
+        int inTotalCnt = 0;
+        for (long i = from; i <= to && i <= totalCnt; i++) {
             EasterEggHistory history = historyMap.getOrDefault(i, null);
-            if (history == null)
-                embedBuilder.addField(i + ". ???", "미발견", true);
-            else {
-                EasterEgg easterEgg = history.getEasterEgg();
-                String time = DateTimeManager.getDate(history.getRegDate());
-                String description = "[" + time + "] " + history.getAccount().getName();
-                embedBuilder.addField(i + ". " + easterEgg.getTitle(), description, true);
-            }
+            addField(embedBuilder, i, history);
+            inTotalCnt++;
         }
-        long empty = (3 - totalCnt % 3);
-        if (totalCnt % 3 != 0)
+        long empty = (3 - inTotalCnt % 3);
+        if (inTotalCnt % 3 != 0)
             for (long i = 1; i <= empty; i++)
                 embedBuilder.addBlankField(true);
-        event.getMessage().replyEmbeds(embedBuilder.build()).queue();
+        return embedBuilder;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void execute(MessageReceivedEvent event) {
+        TextChannel channel = event.getChannel().asTextChannel();
+        Message message = channel.sendMessageEmbeds(getPage(1).build()).complete();
+
+        long totalCnt = easterEggRepository.count();
+        for (int i = 1, j = 1; i < 9; i++, j += 15) {
+            message.addReaction(EmojiManager.getEmoji(i)).queue();
+            if (j <= totalCnt && totalCnt <= j + 14)
+                break;
+        }
     }
 }

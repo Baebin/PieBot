@@ -6,6 +6,8 @@ import com.piebin.piebot.model.entity.EmbedSentence;
 import com.piebin.piebot.model.entity.Sentence;
 import com.piebin.piebot.service.AccountService;
 import com.piebin.piebot.service.ReactionService;
+import com.piebin.piebot.service.impl.commands.EasterEggListCommand;
+import com.piebin.piebot.service.impl.reactions.EasterEggListReactionAdd;
 import com.piebin.piebot.service.impl.reactions.HelpReactionAdd;
 import com.piebin.piebot.utility.EmbedMessageHelper;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,8 @@ public class ReactionServiceImpl implements ReactionService {
 
     private final AccountService accountService;
 
+    private final EasterEggListCommand easterEggListCommand;
+
     @Override
     public void run(MessageReactionAddEvent event) {
         User user = event.retrieveUser().complete();
@@ -52,6 +56,10 @@ public class ReactionServiceImpl implements ReactionService {
         String title = embed.getTitle();
         if (title.startsWith(Sentence.HELP.getMessage())) {
             new HelpReactionAdd().execute(event);
+            return;
+        }
+        if (title.startsWith(Sentence.EASTER_EGG_LIST.getMessage())) {
+            new EasterEggListReactionAdd(easterEggListCommand).execute(event);
             return;
         }
         if (title.startsWith(Sentence.REGISTER.getMessage())) {
