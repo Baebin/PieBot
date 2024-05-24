@@ -1,15 +1,8 @@
 package com.piebin.piebot.controller;
 
-import com.piebin.piebot.component.DiscordBotToken;
+import com.piebin.piebot.component.DiscordBotInfo;
 import com.piebin.piebot.listener.CommandListener;
 import com.piebin.piebot.listener.ReactionListener;
-import com.piebin.piebot.model.repository.AccountRepository;
-import com.piebin.piebot.model.repository.EasterEggHistoryRepository;
-import com.piebin.piebot.model.repository.EasterEggRepository;
-import com.piebin.piebot.model.repository.EasterEggWordRepository;
-import com.piebin.piebot.service.impl.AccountServiceImpl;
-import com.piebin.piebot.service.impl.CommandServiceImpl;
-import com.piebin.piebot.service.impl.ReactionServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
@@ -26,30 +19,25 @@ import org.springframework.web.bind.annotation.RestController;
 public class DiscordBotController {
     private static final String API = "/api/bot/";
 
-    private final DiscordBotToken token;
-
-    private final AccountServiceImpl accountService;
-    private final AccountRepository accountRepository;
-
-
-    private final EasterEggRepository easterEggRepository;
-    private final EasterEggWordRepository easterEggWordRepository;
-    private final EasterEggHistoryRepository easterEggHistoryRepository;
-
     private static JDA jda;
 
     private static boolean status = false;
+
+    private final DiscordBotInfo botInfo;
+
+    private final CommandListener commandListener;
+    private final ReactionListener reactionListener;
 
     @GetMapping(API + "run")
     public ResponseEntity<Boolean> run() {
         if (status)
             return ResponseEntity.ok(false);
-        jda = JDABuilder.createDefault(token.getToken())
-                .setActivity(Activity.playing("나는 바보"))
+        jda = JDABuilder.createDefault(botInfo.getToken())
+                .setActivity(Activity.playing("ㅋ help"))
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT)
                 .addEventListeners(
-                        new CommandListener(new CommandServiceImpl(accountRepository, easterEggRepository, easterEggWordRepository, easterEggHistoryRepository)),
-                        new ReactionListener(new ReactionServiceImpl(accountService))
+                        commandListener,
+                        reactionListener
                 )
                 .build();
         status = true;

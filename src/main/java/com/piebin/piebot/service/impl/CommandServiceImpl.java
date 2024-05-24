@@ -7,6 +7,7 @@ import com.piebin.piebot.model.domain.EasterEggWord;
 import com.piebin.piebot.model.entity.CommandMode;
 import com.piebin.piebot.model.entity.CommandParameter;
 import com.piebin.piebot.model.entity.EmbedSentence;
+import com.piebin.piebot.model.entity.UniEmoji;
 import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.model.repository.EasterEggHistoryRepository;
 import com.piebin.piebot.model.repository.EasterEggRepository;
@@ -20,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,7 +78,7 @@ public class CommandServiceImpl implements CommandService {
                     continue;
                 if (!accountRepository.existsById(user.getId())) {
                     Message message = EmbedMessageHelper.printEmbedMessage(channel, EmbedSentence.REGISTER, Color.GREEN);
-                    message.addReaction(Emoji.fromUnicode("✅")).queue();
+                    message.addReaction(UniEmoji.CHECK.getEmoji()).queue();
 
                     EmbedMessageHelper.receiver.put(message.getId(), user.getId());
                     return;

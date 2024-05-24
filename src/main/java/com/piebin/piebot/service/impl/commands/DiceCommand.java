@@ -24,9 +24,11 @@ public class DiceCommand implements PieCommand {
         if (args.size() >= 2) {
             try {
                 int range = Integer.parseInt(args.get(2));
-                String message = Sentence.COMMAND_DICE_RESULT.getMessage() + " : " + (new Random().nextInt(range) + 1);
-                channel.sendMessage(message).queue();
-                return;
+                if (2 <= range && range <= 100) {
+                    String message = Sentence.COMMAND_DICE_RESULT.getMessage() + " : " + (new Random().nextInt(range) + 1);
+                    channel.sendMessage(message).queue();
+                    return;
+                }
             } catch (Exception e) {}
         }
         EmbedMessageHelper.printCommandErrorMessage(channel, CommandSentence.DICE_ARG1);

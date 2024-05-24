@@ -18,7 +18,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-    public void register(Member member, TextChannel channel) {
+    public void register(TextChannel channel, Member member) {
         if (existsUser(member.getId()))
             throw new AccountException(AccountErrorCode.NOT_FOUND);
         Account account = Account.builder()

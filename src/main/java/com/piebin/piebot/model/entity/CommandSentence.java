@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum CommandSentence {
-    DICE_ARG1("주사위 굴리기", "주사위 범위가 올바르지 않습니다.", "[2~6] 사이의 수를 입력해주세요."),
+    DICE_ARG1("주사위 굴리기", "주사위 범위가 올바르지 않습니다.", "[2~100] 사이의 수를 입력해주세요."),
 
     // Secret
     SECRET_EASTEREGG("Q. 에그를 찾아서", "모든 이스터에그를 찾으면 빈이가 밥을 사준다는 전설이 있다구", "이스터에그는 총 {A}개나 있단다?"),
