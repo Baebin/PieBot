@@ -2,10 +2,7 @@ package com.piebin.piebot.model.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -14,17 +11,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class Account {
+public class EasterEggWord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idx;
 
+    @ManyToOne
+    private EasterEgg easterEgg;
+
+    @NonNull
     @Column(unique = true)
-    private String id;
-
-    private String name;
-
-    @CreatedDate
-    @Column(name = "reg_date")
-    private LocalDateTime regDate;
+    private String word;
 }

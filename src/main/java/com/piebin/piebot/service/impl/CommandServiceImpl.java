@@ -2,12 +2,16 @@ package com.piebin.piebot.service.impl;
 
 import com.piebin.piebot.model.domain.Account;
 import com.piebin.piebot.model.domain.EasterEgg;
+import com.piebin.piebot.model.domain.EasterEggHistory;
+import com.piebin.piebot.model.domain.EasterEggWord;
 import com.piebin.piebot.model.entity.CommandMode;
 import com.piebin.piebot.model.entity.CommandParameter;
 import com.piebin.piebot.model.entity.CommandSentence;
 import com.piebin.piebot.model.entity.EmbedSentence;
 import com.piebin.piebot.model.repository.AccountRepository;
+import com.piebin.piebot.model.repository.EasterEggHistoryRepository;
 import com.piebin.piebot.model.repository.EasterEggRepository;
+import com.piebin.piebot.model.repository.EasterEggWordRepository;
 import com.piebin.piebot.service.CommandService;
 import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.service.impl.commands.EmbedPrintCommand;
@@ -33,7 +37,10 @@ public class CommandServiceImpl implements CommandService {
     public static final String PREFIX = "ㅋ";
 
     private final AccountRepository accountRepository;
+
     private final EasterEggRepository easterEggRepository;
+    private final EasterEggWordRepository easterEggWordRepository;
+    private final EasterEggHistoryRepository easterEggHistoryRepository;
 
     private boolean checkArg(String arg, CommandParameter commandParameter) {
         for (String data : commandParameter.getData()) {
@@ -43,10 +50,6 @@ public class CommandServiceImpl implements CommandService {
             ) return true;
         }
         return false;
-    }
-
-    private boolean isEasterEgg(CommandParameter parameter) {
-        return parameter.getDescription().contains("Easter Egg");
     }
 
     @Override
@@ -61,11 +64,20 @@ public class CommandServiceImpl implements CommandService {
         if (args.get(0).equals(PREFIX)) {
             if (args.size() == 1)
                 return;
+            TextChannel channel = event.getChannel().asTextChannel();
+
+            // Easter Egg
+            List<EasterEggWord> words = easterEggWordRepository.findByWordIgnoreCase(args.get(1));
+            if (!words.isEmpty()) {
+                EasterEgg easterEgg = words.get(0).getEasterEgg();
+                EmbedMessageHelper.printEmbedMessage(channel, easterEgg.getTitle(), easterEgg.getMessage(), easterEgg.getDescription(), Color.GREEN);
+                recordEasterEgg(user.getId(), easterEgg, event.getMessage());
+                return;
+            }
             for (CommandParameter parameter : CommandParameter.values()) {
                 if (!checkArg(args.get(1), parameter))
                     continue;
                 if (!accountRepository.existsById(user.getId())) {
-                    TextChannel channel = event.getChannel().asTextChannel();
                     Message message = EmbedMessageHelper.printEmbedMessage(channel, EmbedSentence.REGISTER, Color.GREEN);
                     message.addReaction(Emoji.fromUnicode("✅")).queue();
 
@@ -74,11 +86,6 @@ public class CommandServiceImpl implements CommandService {
                 }
                 PieCommand command = parameter.getCommand();
                 command.execute(event);
-
-                // Easter Egg
-                if (isEasterEgg(parameter)) {
-                    recordEasterEgg(user.getId(), ((EmbedPrintCommand)parameter.getCommand()).getSentence(), event.getMessage());
-                }
                 break;
             }
         }
@@ -86,18 +93,18 @@ public class CommandServiceImpl implements CommandService {
 
     @Override
     @Transactional
-    public void recordEasterEgg(String id, CommandSentence sentence, Message message) {
-        if (easterEggRepository.existsBySentence(sentence))
+    public void recordEasterEgg(String id, EasterEgg easterEgg, Message message) {
+        if (easterEggHistoryRepository.existsByEasterEgg(easterEgg))
             return;
         Optional<Account> optional = accountRepository.findById(id);
         if (optional.isEmpty())
             return;
         Account account = optional.get();
-        EasterEgg easterEgg = EasterEgg.builder()
+        EasterEggHistory easterEggHistory = EasterEggHistory.builder()
                 .account(account)
-                .sentence(sentence)
+                .easterEgg(easterEgg)
                 .build();
-        easterEggRepository.save(easterEgg);
+        easterEggHistoryRepository.save(easterEggHistory);
 
         message.replyEmbeds(EmbedMessageHelper.getEmbedBuilder(EmbedSentence.EASTER_EGG_FIND, Color.CYAN).build()).queue();
     }

@@ -14,15 +14,16 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class Account {
+public class EasterEggHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idx;
 
-    @Column(unique = true)
-    private String id;
+    @ManyToOne
+    private Account account;
 
-    private String name;
+    @OneToOne
+    private EasterEgg easterEgg;
 
     @CreatedDate
     @Column(name = "reg_date")
