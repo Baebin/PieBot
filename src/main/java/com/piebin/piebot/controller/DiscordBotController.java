@@ -33,13 +33,19 @@ public class DiscordBotController {
         if (status)
             return ResponseEntity.ok(false);
         jda = JDABuilder.createDefault(botInfo.getToken())
-                .setActivity(Activity.playing("ㅋ help"))
+                .setActivity(Activity.playing("ㅋ 도움말"))
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT)
                 .addEventListeners(
                         commandListener,
                         reactionListener
                 )
                 .build();
+        /*
+        jda.updateCommands().addCommands(
+                SlashCommand.TEST.getData()
+        ).queue();
+        */
+
         status = true;
         log.info("Discord Bot Started");
         return ResponseEntity.ok(true);

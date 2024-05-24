@@ -14,7 +14,7 @@ public enum EmbedSentence {
 
     EASTER_EGG_FIND("이스터에그", "해당 이스터에그의 최초 발견자입니다.", "이 업적은 명예의 전당에 자동으로 기록됩니다.");
 
-    private String title;
-    private String message;
-    private String description;
+    private final String title;
+    private final String message;
+    private final String description;
 }

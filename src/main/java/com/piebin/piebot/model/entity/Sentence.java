@@ -20,5 +20,5 @@ public enum Sentence {
 
     REGISTER("회원가입");
 
-    String message;
+    private final String message;
 }

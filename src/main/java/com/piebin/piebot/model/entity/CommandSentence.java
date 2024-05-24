@@ -22,7 +22,7 @@ public enum CommandSentence {
     SECRET_FOOD_CONTAIN2("음식 맞추기", "힌트", "...겠나요 팽달씨?"),
     SECRET_FOOD_CONTAIN3("음식 맞추기", "힌트", "정녕 저를 삶아먹으실 계획인가요");
 
-    private String title;
-    private String message;
-    private String description;
+    private final String title;
+    private final String message;
+    private final String description;
 }

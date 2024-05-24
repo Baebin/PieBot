@@ -18,7 +18,7 @@ public enum UniEmoji {
     NUM_8("8️⃣"),
     NUM_9("9️⃣");
 
-    private String emoji;
+    private final String emoji;
 
     public Emoji getEmoji() {
         return Emoji.fromUnicode(this.emoji);
