@@ -22,6 +22,9 @@ public class Account {
     @Column(unique = true)
     private String id;
 
+    @Builder.Default
+    private Long money = 1000L;
+
     private String name;
 
     @CreatedDate

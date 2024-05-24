@@ -11,6 +11,8 @@ public enum Sentence {
 
     EASTER_EGG_LIST("최초 발견자"),
 
+    PROFILE("프로필"),
+    
     HELP("명령어 목록"),
     HELP_1("명령어 목록 - 기본"),
     HELP_2("명령어 목록 - 오락"),

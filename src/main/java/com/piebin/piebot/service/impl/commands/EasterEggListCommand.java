@@ -6,6 +6,7 @@ import com.piebin.piebot.model.entity.Sentence;
 import com.piebin.piebot.model.repository.EasterEggHistoryRepository;
 import com.piebin.piebot.model.repository.EasterEggRepository;
 import com.piebin.piebot.service.PieCommand;
+import com.piebin.piebot.utility.DateTimeManager;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -45,8 +46,8 @@ public class EasterEggListCommand implements PieCommand {
                 embedBuilder.addField(i + ". ???", "미발견", true);
             else {
                 EasterEgg easterEgg = history.getEasterEgg();
-                DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
-                String description = "[" + history.getRegDate().format(dateFormat) + "] " + history.getAccount().getName();
+                String time = DateTimeManager.getDate(history.getRegDate());
+                String description = "[" + time + "] " + history.getAccount().getName();
                 embedBuilder.addField(i + ". " + easterEgg.getTitle(), description, true);
             }
         }

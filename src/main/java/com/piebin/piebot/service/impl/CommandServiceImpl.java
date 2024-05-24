@@ -15,6 +15,7 @@ import com.piebin.piebot.model.repository.EasterEggWordRepository;
 import com.piebin.piebot.service.CommandService;
 import com.piebin.piebot.service.impl.commands.EasterEggCommand;
 import com.piebin.piebot.service.impl.commands.EasterEggListCommand;
+import com.piebin.piebot.service.impl.commands.ProfileCommand;
 import com.piebin.piebot.utility.EmbedMessageHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CommandServiceImpl implements CommandService {
     public static final String PREFIX = "ㅋ";
+    public static final String PREFIX_ENGLISH = "z";
 
     private final AccountRepository accountRepository;
 
@@ -60,7 +62,7 @@ public class CommandServiceImpl implements CommandService {
         List<String> args = EmbedMessageHelper.getArgs(event);
         log.info("user: {}, args: {}", user, args);
 
-        if (args.get(0).equals(PREFIX)) {
+        if (args.get(0).equals(PREFIX) || args.get(0).equalsIgnoreCase(PREFIX_ENGLISH)) {
             if (args.size() == 1)
                 return;
             TextChannel channel = event.getChannel().asTextChannel();
@@ -83,7 +85,9 @@ public class CommandServiceImpl implements CommandService {
                     EmbedMessageHelper.receiver.put(message.getId(), user.getId());
                     return;
                 }
-                if (parameter == CommandParameter.SECRET_EASTEREGG)
+                if (parameter == CommandParameter.PROFILE)
+                    new ProfileCommand(accountRepository).execute(event);
+                else if (parameter == CommandParameter.SECRET_EASTEREGG)
                     new EasterEggCommand(easterEggRepository).execute(event);
                 else if (parameter == CommandParameter.SECRET_EASTEREGG_LIST)
                     new EasterEggListCommand(easterEggRepository, easterEggHistoryRepository).execute(event);
