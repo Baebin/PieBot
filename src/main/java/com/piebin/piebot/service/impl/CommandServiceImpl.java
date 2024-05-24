@@ -13,6 +13,7 @@ import com.piebin.piebot.model.repository.EasterEggRepository;
 import com.piebin.piebot.model.repository.EasterEggWordRepository;
 import com.piebin.piebot.service.CommandService;
 import com.piebin.piebot.service.impl.commands.EasterEggCommand;
+import com.piebin.piebot.service.impl.commands.EasterEggListCommand;
 import com.piebin.piebot.utility.EmbedMessageHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -84,6 +85,8 @@ public class CommandServiceImpl implements CommandService {
                 }
                 if (parameter == CommandParameter.SECRET_EASTEREGG)
                     new EasterEggCommand(easterEggRepository).execute(event);
+                else if (parameter == CommandParameter.SECRET_EASTEREGG_LIST)
+                    new EasterEggListCommand(easterEggRepository, easterEggHistoryRepository).execute(event);
                 else parameter.getCommand().execute(event);
                 break;
             }
