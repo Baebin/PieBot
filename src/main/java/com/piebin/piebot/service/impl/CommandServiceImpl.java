@@ -105,6 +105,7 @@ public class CommandServiceImpl implements CommandService {
         if (optional.isEmpty())
             return;
         Account account = optional.get();
+        account.setMoney(account.getMoney() + 3000);
         EasterEggHistory easterEggHistory = EasterEggHistory.builder()
                 .account(account)
                 .easterEgg(easterEgg)
