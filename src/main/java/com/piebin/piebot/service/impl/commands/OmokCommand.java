@@ -186,8 +186,8 @@ public class OmokCommand implements PieCommand, OmokService {
                     continue;
                 OmokInfo omokInfo = optionalOmokInfo.get();
                 if (omokInfo.getState() == OmokState.BLACK)
-                    builder.setCharAt((x - 'A'), '●');
-                else builder.setCharAt((x - 'A'), '○');
+                    builder.setCharAt((x - 'A'), '○');
+                else builder.setCharAt((x - 'A'), '●');
             }
             lines.set(y, builder.toString());
         }
@@ -223,6 +223,7 @@ public class OmokCommand implements PieCommand, OmokService {
             Omok omok = optionalOmok.get();
             omok.setWin(omok.getWin() + 1);
         }
+        account.setMoney(account.getMoney() + 1000);
     }
 
     @Override
@@ -255,6 +256,7 @@ public class OmokCommand implements PieCommand, OmokService {
             Omok omok = optionalOmok.get();
             omok.setLose(omok.getLose() + 1);
         }
+        account.setMoney(account.getMoney() + 500);
     }
 
     @Override
@@ -326,8 +328,14 @@ public class OmokCommand implements PieCommand, OmokService {
 
         if (!isWin(omokRoom, state, x, y))
             return;
-        addWin(omokRoom.getAccount());
-        addLose(omokRoom.getOpponent());
+        Account winner = account;
+        Account loser;
+        if (winner != omokRoom.getAccount())
+            loser = omokRoom.getAccount();
+        else loser = omokRoom.getOpponent();
+
+        addWin(winner);
+        addLose(loser);
 
         omokInfoRepository.deleteAllByRoom(omokRoom);
         omokRoomRepository.delete(omokRoom);

@@ -63,12 +63,12 @@ public class ReactionServiceImpl implements ReactionService {
             moneyRankReactionAdd.execute(event);
             return;
         }
-        if (title.startsWith(Sentence.OMOK.getMessage())) {
-            omokReactionAdd.execute(event);
-            return;
-        }
         if (title.startsWith(Sentence.OMOK_RANK.getMessage())) {
             omokRankReactionAdd.execute(event);
+            return;
+        }
+        if (title.startsWith(Sentence.OMOK.getMessage())) {
+            omokReactionAdd.execute(event);
             return;
         }
         if (title.startsWith(Sentence.EASTER_EGG_LIST.getMessage())) {
