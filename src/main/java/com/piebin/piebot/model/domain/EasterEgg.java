@@ -23,6 +23,4 @@ public class EasterEgg {
     private String title;
 
     private String message;
-
-    private String description;
 }

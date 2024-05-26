@@ -10,6 +10,7 @@ public enum Sentence {
     SECRET_FOOD("음식 맞추기"),
 
     EASTER_EGG_LIST("최초 발견자"),
+    IS_EASTER_EGG("번째 이스터에그야."),
 
     PROFILE("프로필"),
     

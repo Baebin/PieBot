@@ -70,7 +70,7 @@ public class CommandServiceImpl implements CommandService {
             List<EasterEggWord> words = easterEggWordRepository.findByWordIgnoreCase(args.get(1));
             if (!words.isEmpty()) {
                 EasterEgg easterEgg = words.get(0).getEasterEgg();
-                EmbedMessageHelper.printEmbedMessage(channel, easterEgg.getTitle(), easterEgg.getMessage(), easterEgg.getDescription(), Color.GREEN);
+                EmbedMessageHelper.printEmbedMessage(channel, easterEgg.getTitle(), easterEgg.getMessage(), easterEgg.getIdx() + Sentence.IS_EASTER_EGG.getMessage(), Color.GREEN);
                 recordEasterEgg(user.getId(), easterEgg, event.getMessage());
                 return;
             }
