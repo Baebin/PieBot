@@ -2,15 +2,15 @@ package com.piebin.piebot.service.impl.commands;
 
 import com.piebin.piebot.model.domain.EasterEgg;
 import com.piebin.piebot.model.domain.EasterEggHistory;
-import com.piebin.piebot.model.entity.CommandParameter;
 import com.piebin.piebot.model.entity.Sentence;
-import com.piebin.piebot.model.entity.UniEmoji;
 import com.piebin.piebot.model.repository.EasterEggHistoryRepository;
 import com.piebin.piebot.model.repository.EasterEggRepository;
 import com.piebin.piebot.service.PageService;
 import com.piebin.piebot.service.PieCommand;
+import com.piebin.piebot.utility.CommandManager;
 import com.piebin.piebot.utility.DateTimeManager;
 import com.piebin.piebot.utility.EmojiManager;
+import com.piebin.piebot.utility.PageManager;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -74,14 +74,18 @@ public class EasterEggListCommand implements PieCommand, PageService {
     @Override
     @Transactional(readOnly = true)
     public void execute(MessageReceivedEvent event) {
-        TextChannel channel = event.getChannel().asTextChannel();
-        Message message = channel.sendMessageEmbeds(getPage(1).build()).complete();
+        List<String> args = CommandManager.getArgs(event);
 
-        long totalCnt = easterEggRepository.count();
-        for (int i = 1, j = 1; i < 9; i++, j += 15) {
+        int initPage = 1;
+        int totalCnt = (int) easterEggRepository.count();
+        if (args.size() >= 3)
+            initPage = PageManager.getPage(totalCnt, 15, args.get(2));
+
+        TextChannel channel = event.getChannel().asTextChannel();
+        Message message = channel.sendMessageEmbeds(getPage(initPage).build()).complete();
+
+        int pages = PageManager.getPages(totalCnt, 15);
+        for (int i = 1; i <= pages; i++)
             message.addReaction(EmojiManager.getEmoji(i)).queue();
-            if (j <= totalCnt && totalCnt <= j + 14)
-                break;
-        }
     }
 }

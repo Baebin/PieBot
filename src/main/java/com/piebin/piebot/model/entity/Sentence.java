@@ -17,7 +17,11 @@ public enum Sentence {
     HELP("명령어 목록"),
     HELP_1("명령어 목록 - 기본"),
     HELP_2("명령어 목록 - 오락"),
-    HELP_3("명령어 목록 - 기타"),
+    HELP_3("명령어 목록 - 화폐"),
+    HELP_4("명령어 목록 - 기타"),
+
+    MONEY_RANK("자산 순위"),
+    MONEY_RANK_REFRESH("마지막 갱신 시간"),
 
     REGISTER("회원가입");
 

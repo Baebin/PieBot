@@ -1,8 +1,10 @@
 package com.piebin.piebot.service.impl.reactions;
 
+import com.piebin.piebot.model.entity.Sentence;
 import com.piebin.piebot.service.PieReactionAdd;
-import com.piebin.piebot.service.impl.commands.HelpCommand;
+import com.piebin.piebot.service.impl.commands.MoneyRankCommand;
 import com.piebin.piebot.utility.EmojiManager;
+import com.piebin.piebot.utility.ReactionManager;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageReaction;
@@ -10,22 +12,26 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
-public class HelpReactionAdd implements PieReactionAdd {
+public class MoneyRankReactionAdd implements PieReactionAdd {
     @Override
     public void execute(MessageReactionAddEvent event) {
         User user = event.getUser();
         MessageReaction reaction = event.getReaction();
         reaction.removeReaction(user).queue();
 
-        MessageEmbed embed = null;
-        Emoji emoji = reaction.getEmoji();
-        HelpCommand command = new HelpCommand();
-        for (int i = 1; i <= HelpCommand.PAGES; i++)
-            if (emoji.equals(EmojiManager.getEmoji(i)))
-                embed = command.getPage(i).build();
+        MessageEmbed embed = ReactionManager.getEmbed(event);
         if (embed == null)
             return;
+        int page = 1;
+        try {
+            Integer.parseInt(embed.getTitle().replace(Sentence.MONEY_RANK + " - ", ""));
+        } catch (Exception e) {}
+
+        Emoji emoji = reaction.getEmoji();
+        page += EmojiManager.getPageCount(emoji);
+
+        MoneyRankCommand command = new MoneyRankCommand();
         Message message = event.retrieveMessage().complete();
-        message.editMessageEmbeds(embed).queue();
+        message.editMessageEmbeds(command.getPage(page).build()).queue();
     }
 }

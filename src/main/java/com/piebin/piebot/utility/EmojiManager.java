@@ -4,6 +4,20 @@ import com.piebin.piebot.model.entity.UniEmoji;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 
 public class EmojiManager {
+    public static int getPageCount(Emoji emoji) {
+        if (emoji.equals(UniEmoji.ARROW_LEFT_DOUBLE.getEmoji()))
+            return -10;
+        if (emoji.equals(UniEmoji.ARROW_LEFT.getEmoji()))
+            return -1;
+        if (emoji.equals(UniEmoji.ARROW_REFRESH.getEmoji()))
+            return 0;
+        if (emoji.equals(UniEmoji.ARROW_RIGHT.getEmoji()))
+            return 1;
+        if (emoji.equals(UniEmoji.ARROW_RIGHT_DOUBLE.getEmoji()))
+            return 10;
+        return 0;
+    }
+
     public static int getNumber(Emoji emoji) {
         if (emoji.equals(UniEmoji.NUM_0.getEmoji()))
             return 0;

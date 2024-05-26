@@ -9,6 +9,7 @@ import com.piebin.piebot.service.ReactionService;
 import com.piebin.piebot.service.impl.commands.EasterEggListCommand;
 import com.piebin.piebot.service.impl.reactions.EasterEggListReactionAdd;
 import com.piebin.piebot.service.impl.reactions.HelpReactionAdd;
+import com.piebin.piebot.service.impl.reactions.MoneyRankReactionAdd;
 import com.piebin.piebot.utility.EmbedMessageHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +57,10 @@ public class ReactionServiceImpl implements ReactionService {
         String title = embed.getTitle();
         if (title.startsWith(Sentence.HELP.getMessage())) {
             new HelpReactionAdd().execute(event);
+            return;
+        }
+        if (title.startsWith(Sentence.MONEY_RANK.getMessage())) {
+            new MoneyRankReactionAdd().execute(event);
             return;
         }
         if (title.startsWith(Sentence.EASTER_EGG_LIST.getMessage())) {

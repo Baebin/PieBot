@@ -7,6 +7,12 @@ import net.dv8tion.jda.api.entities.emoji.Emoji;
 public enum UniEmoji {
     CHECK("✅"),
 
+    ARROW_LEFT("⬅️"),
+    ARROW_RIGHT("➡️"),
+    ARROW_LEFT_DOUBLE("⏪"),
+    ARROW_RIGHT_DOUBLE("⏩"),
+    ARROW_REFRESH("\uD83D\uDD04"),
+
     NUM_0("0️⃣"),
     NUM_1("1️⃣"),
     NUM_2("2️⃣"),
