@@ -12,6 +12,9 @@ public enum EmbedSentence {
 
     PROFILE_NOT_FOUND("프로필", "내 정보를 불러올 수 없습니다.", "관리자에게 문의해주세요."),
 
+    OMOK_PVP_STARTED("오목 대전", "게임이 시작되었습니다.", "즐거운 플레이 되세요."),
+    OMOK_PVP_WIN("오목 대전", "{A} 승리", "게임이 종료되었습니다."),
+
     EASTER_EGG_FIND("이스터에그", "해당 이스터에그의 최초 발견자입니다.\n업적 달성 보상으로 3,000빙이 입금되었습니다.", "이 업적은 명예의 전당에 자동으로 기록됩니다.");
 
     private final String title;

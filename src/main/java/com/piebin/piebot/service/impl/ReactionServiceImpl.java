@@ -6,10 +6,7 @@ import com.piebin.piebot.model.entity.EmbedSentence;
 import com.piebin.piebot.model.entity.Sentence;
 import com.piebin.piebot.service.AccountService;
 import com.piebin.piebot.service.ReactionService;
-import com.piebin.piebot.service.impl.commands.EasterEggListCommand;
-import com.piebin.piebot.service.impl.reactions.EasterEggListReactionAdd;
-import com.piebin.piebot.service.impl.reactions.HelpReactionAdd;
-import com.piebin.piebot.service.impl.reactions.MoneyRankReactionAdd;
+import com.piebin.piebot.service.impl.reactions.*;
 import com.piebin.piebot.utility.EmbedMessageHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +30,10 @@ public class ReactionServiceImpl implements ReactionService {
 
     private final AccountService accountService;
 
-    private final EasterEggListCommand easterEggListCommand;
+    private final MoneyRankReactionAdd moneyRankReactionAdd;
+    private final OmokReactionAdd omokReactionAdd;
+    private final OmokRankReactionAdd omokRankReactionAdd;
+    private final EasterEggListReactionAdd easterEggListReactionAdd;
 
     @Override
     public void run(MessageReactionAddEvent event) {
@@ -60,11 +60,19 @@ public class ReactionServiceImpl implements ReactionService {
             return;
         }
         if (title.startsWith(Sentence.MONEY_RANK.getMessage())) {
-            new MoneyRankReactionAdd().execute(event);
+            moneyRankReactionAdd.execute(event);
+            return;
+        }
+        if (title.startsWith(Sentence.OMOK.getMessage())) {
+            omokReactionAdd.execute(event);
+            return;
+        }
+        if (title.startsWith(Sentence.OMOK_RANK.getMessage())) {
+            omokRankReactionAdd.execute(event);
             return;
         }
         if (title.startsWith(Sentence.EASTER_EGG_LIST.getMessage())) {
-            new EasterEggListReactionAdd(easterEggListCommand).execute(event);
+            easterEggListReactionAdd.execute(event);
             return;
         }
         if (title.startsWith(Sentence.REGISTER.getMessage())) {

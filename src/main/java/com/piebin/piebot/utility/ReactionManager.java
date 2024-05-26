@@ -5,6 +5,14 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 public class ReactionManager {
+    static public Message getMessage(MessageReactionAddEvent event) {
+        try {
+            return event.retrieveMessage().complete();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     static public MessageEmbed getEmbed(MessageReactionAddEvent event) {
         try {
             Message message = event.retrieveMessage().complete();

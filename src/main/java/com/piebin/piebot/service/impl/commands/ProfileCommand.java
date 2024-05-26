@@ -7,6 +7,7 @@ import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.utility.DateTimeManager;
 import com.piebin.piebot.utility.EmbedMessageHelper;
+import com.piebin.piebot.utility.MessageManager;
 import com.piebin.piebot.utility.NumberManager;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -46,15 +47,12 @@ public class ProfileCommand implements PieCommand {
         Optional<Account> optional = accountRepository.findById(userId);
         if (optional.isEmpty())
             return;
-        try {
+        FileUpload fileUpload = MessageManager.getProfile(event.getAuthor().getAvatarUrl());
+        if (fileUpload != null) {
             Account account = optional.get();
-            InputStream in = new URL(event.getAuthor().getAvatarUrl()).openStream();
-            FileUpload fileUpload = FileUpload.fromData(in, "profile.png");
             event.getMessage().replyFiles(fileUpload)
                     .setEmbeds(getProfile(account).build())
                     .queue();
-        } catch (Exception e) {
-            EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.PROFILE_NOT_FOUND, Color.RED);
-        }
+        } else EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.PROFILE_NOT_FOUND, Color.RED);
     }
 }

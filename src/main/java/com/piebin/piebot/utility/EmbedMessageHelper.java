@@ -26,6 +26,14 @@ public class EmbedMessageHelper {
         return embedBuilder;
     }
 
+    public static EmbedBuilder getEmbedBuilder(CommandSentence sentence, Color color) {
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+        embedBuilder.setTitle(sentence.getTitle());
+        embedBuilder.addField(sentence.getMessage(), sentence.getDescription(), false);
+        embedBuilder.setColor(color);
+        return embedBuilder;
+    }
+
     /*
     Reply
     */

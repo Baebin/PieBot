@@ -4,6 +4,28 @@ import com.piebin.piebot.model.entity.UniEmoji;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 
 public class EmojiManager {
+    public static String getUniAlphabet(char alphabet) {
+        int idx = alphabet - 'a';
+        String[] alphabets = {
+                "ⓐ", "ⓑ", "ⓒ", "ⓓ", "ⓔ",
+                "ⓕ", "ⓖ", "ⓗ", "ⓘ", "ⓙ",
+                "ⓚ", "ⓛ", "ⓜ", "ⓝ", "ⓞ",
+                "ⓟ", "ⓠ", "ⓡ", "ⓢ", "ⓣ",
+                "ⓤ", "ⓥ", "ⓦ", "ⓧ", "ⓨ",
+                "ⓩ"
+        };
+        if (0 <= idx && idx <= 25)
+            return alphabets[idx];
+        return "";
+    }
+
+    public static String getUniCircle(int num) {
+        String[] circles = { "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩", "⑪", "⑫", "⑬", "⑭" };
+        if (1 <= num && num <= 14)
+            return circles[num - 1];
+        return "";
+    }
+
     public static int getPageCount(Emoji emoji) {
         if (emoji.equals(UniEmoji.ARROW_LEFT_DOUBLE.getEmoji()))
             return -10;

@@ -43,6 +43,10 @@ public class HelpCommand implements PieCommand, PageService {
                 embedBuilder.setTitle(Sentence.HELP_2.getMessage());
                 addField(embedBuilder, CommandParameter.BABO);
                 addField(embedBuilder, CommandParameter.DICE);
+                addField(embedBuilder, CommandParameter.OMOK_PVP);
+                addField(embedBuilder, CommandParameter.OMOK_QUIT);
+                addField(embedBuilder, CommandParameter.OMOK_PROFILE);
+                addField(embedBuilder, CommandParameter.OMOK_CONTINUE);
                 break;
             case 3:
                 embedBuilder.setTitle(Sentence.HELP_3.getMessage());

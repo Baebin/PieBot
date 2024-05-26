@@ -5,15 +5,9 @@ import com.piebin.piebot.model.domain.EasterEgg;
 import com.piebin.piebot.model.domain.EasterEggHistory;
 import com.piebin.piebot.model.domain.EasterEggWord;
 import com.piebin.piebot.model.entity.*;
-import com.piebin.piebot.model.repository.AccountRepository;
-import com.piebin.piebot.model.repository.EasterEggHistoryRepository;
-import com.piebin.piebot.model.repository.EasterEggRepository;
-import com.piebin.piebot.model.repository.EasterEggWordRepository;
+import com.piebin.piebot.model.repository.*;
 import com.piebin.piebot.service.CommandService;
-import com.piebin.piebot.service.impl.commands.EasterEggCommand;
-import com.piebin.piebot.service.impl.commands.EasterEggListCommand;
-import com.piebin.piebot.service.impl.commands.PayCommand;
-import com.piebin.piebot.service.impl.commands.ProfileCommand;
+import com.piebin.piebot.service.impl.commands.*;
 import com.piebin.piebot.utility.CommandManager;
 import com.piebin.piebot.utility.EmbedMessageHelper;
 import lombok.RequiredArgsConstructor;
@@ -38,9 +32,14 @@ public class CommandServiceImpl implements CommandService {
 
     private final AccountRepository accountRepository;
 
-    private final EasterEggRepository easterEggRepository;
     private final EasterEggWordRepository easterEggWordRepository;
     private final EasterEggHistoryRepository easterEggHistoryRepository;
+
+    private final ProfileCommand profileCommand;
+    private final PayCommand payCommand;
+    private final OmokCommand omokCommand;
+    private final EasterEggCommand easterEggCommand;
+    private final EasterEggListCommand easterEggListCommand;
 
     private boolean checkArg(String arg, CommandParameter commandParameter) {
         for (String data : commandParameter.getData()) {
@@ -66,6 +65,19 @@ public class CommandServiceImpl implements CommandService {
                 return;
             TextChannel channel = event.getChannel().asTextChannel();
 
+            if (args.get(1).length() == 2 || args.get(1).length() == 3) {
+                try {
+                    char x = args.get(1).toUpperCase().charAt(0);
+                    int y = Integer.parseInt(args.get(1).substring(1, args.get(1).length()));
+                    if (('A' <= x && x <= 'A' + 13) && (1 <= y && y <= 14)) {
+                        Optional<Account> optionalAccount = accountRepository.findById(user.getId());
+                        if (optionalAccount.isEmpty())
+                            return;
+                        omokCommand.selectPosition(event, optionalAccount.get(), x, y);
+                    }
+                } catch (Exception e) {}
+            }
+
             // Easter Egg
             List<EasterEggWord> words = easterEggWordRepository.findByWordIgnoreCase(args.get(1));
             if (!words.isEmpty()) {
@@ -82,14 +94,19 @@ public class CommandServiceImpl implements CommandService {
                     message.addReaction(UniEmoji.CHECK.getEmoji()).queue();
                     return;
                 }
-                if (parameter == CommandParameter.PAY)
-                    new PayCommand(accountRepository).execute(event);
-                else if (parameter == CommandParameter.PROFILE)
-                    new ProfileCommand(accountRepository).execute(event);
+                if (parameter == CommandParameter.PROFILE)
+                    profileCommand.execute(event);
+                else if (parameter == CommandParameter.PAY)
+                    payCommand.execute(event);
+                else if (parameter == CommandParameter.OMOK_PVP
+                        || parameter == CommandParameter.OMOK_QUIT
+                        || parameter == CommandParameter.OMOK_PROFILE
+                        || parameter == CommandParameter.OMOK_CONTINUE)
+                    omokCommand.execute(event);
                 else if (parameter == CommandParameter.SECRET_EASTEREGG)
-                    new EasterEggCommand(easterEggRepository).execute(event);
+                    easterEggCommand.execute(event);
                 else if (parameter == CommandParameter.SECRET_EASTEREGG_LIST)
-                    new EasterEggListCommand(easterEggRepository, easterEggHistoryRepository).execute(event);
+                    easterEggListCommand.execute(event);
                 else parameter.getCommand().execute(event);
                 break;
             }

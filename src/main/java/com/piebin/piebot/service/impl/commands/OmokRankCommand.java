@@ -1,11 +1,11 @@
 package com.piebin.piebot.service.impl.commands;
 
-import com.piebin.piebot.model.domain.Account;
+import com.piebin.piebot.model.domain.Omok;
 import com.piebin.piebot.model.entity.Sentence;
 import com.piebin.piebot.model.entity.UniEmoji;
 import com.piebin.piebot.service.PageService;
 import com.piebin.piebot.service.PieCommand;
-import com.piebin.piebot.service.impl.scheduler.MoneySchedulerServiceImpl;
+import com.piebin.piebot.service.impl.scheduler.OmokSchedulerServiceImpl;
 import com.piebin.piebot.utility.CommandManager;
 import com.piebin.piebot.utility.DateTimeManager;
 import com.piebin.piebot.utility.NumberManager;
@@ -25,31 +25,39 @@ import java.util.List;
 @Service
 @Component
 @RequiredArgsConstructor
-public class MoneyRankCommand implements PieCommand, PageService {
-    private final int OFFSET = 15;
+public class OmokRankCommand implements PieCommand, PageService {
+    private final int OFFSET = 10;
 
     private void addField(EmbedBuilder embedBuilder, int rank) {
-        if (MoneySchedulerServiceImpl.moneyRankList.size() < rank) {
+        if (OmokSchedulerServiceImpl.omokRankList.size() < rank) {
             embedBuilder.addBlankField(true);
             return;
         }
-        Account account = MoneySchedulerServiceImpl.moneyRankList.get(rank - 1);
-        embedBuilder.addField(rank + "등. " + account.getName(), NumberManager.getNumber(account.getMoney()) + "빙", true);
+        Omok omok = OmokSchedulerServiceImpl.omokRankList.get(rank - 1);
+        long total = (omok.getWin() + omok.getTie() + omok.getLose());
+        double odds = 0.0;
+        if (total != 0)
+            odds = (100 * omok.getWin() / total);
+        String value = NumberManager.getNumber(omok.getWin()) + "승 "
+                + NumberManager.getNumber(omok.getTie()) + "무 "
+                + NumberManager.getNumber(omok.getLose()) + "패 "
+                + " (" + String.format("%.2f", odds) + "%)";
+        embedBuilder.addField(rank + "등. " + omok.getAccount().getName(), value, true);
     }
 
     @Override
     public EmbedBuilder getPage(int page) {
-        page = PageManager.getPage(MoneySchedulerServiceImpl.moneyRankList.size(), OFFSET, page);
+        page = PageManager.getPage(OmokSchedulerServiceImpl.omokRankList.size(), OFFSET, page);
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setTitle(Sentence.MONEY_RANK.getMessage() + " - " + page);
+        embedBuilder.setTitle(Sentence.OMOK_RANK.getMessage() + " - " + page);
         embedBuilder.setColor(Color.GREEN);
 
         int from = (page - 1) * OFFSET + 1;
         int to = (page) * OFFSET;
         for (int rank = from; rank <= to; rank++)
             addField(embedBuilder, rank);
-        embedBuilder.addField(Sentence.RANK_REFRESH.getMessage(), DateTimeManager.getDate(MoneySchedulerServiceImpl.moneyRankDateTime), false);
+        embedBuilder.addField(Sentence.RANK_REFRESH.getMessage(), DateTimeManager.getDate(OmokSchedulerServiceImpl.omokRankDateTime), false);
         return embedBuilder;
     }
 
@@ -59,9 +67,9 @@ public class MoneyRankCommand implements PieCommand, PageService {
         List<String> args = CommandManager.getArgs(event);
 
         int initPage = 1;
-        if (args.size() >= 3) {
-            int totalCnt = MoneySchedulerServiceImpl.moneyRankList.size();
-            initPage = PageManager.getPage(totalCnt, OFFSET, args.get(2));
+        if (args.size() >= 4) {
+            int totalCnt = OmokSchedulerServiceImpl.omokRankList.size();
+            initPage = PageManager.getPage(totalCnt, OFFSET, args.get(3));
         }
 
         TextChannel channel = event.getChannel().asTextChannel();
