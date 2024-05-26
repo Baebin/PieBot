@@ -273,7 +273,6 @@ public class OmokCommand implements PieCommand, OmokService {
             while (true) {
                 X += dx[d];
                 Y += dy[d];
-                System.out.println("X, Y: " + X + ", " + Y);
                 if (!(('A' <= X && X <= 'A' + 13) && (1 <= Y && Y <= 14)))
                     break;
                 Optional<OmokInfo> optional = omokInfoRepository.findByRoomAndPosition(omokRoom, "" + X + Y);

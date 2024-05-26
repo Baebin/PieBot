@@ -58,11 +58,10 @@ public class CommandServiceImpl implements CommandService {
         if (user.isBot())
             return;
         List<String> args = CommandManager.getArgs(event);
-        log.info("user: {}, args: {}", user, args);
-
         if (args.get(0).equals(PREFIX) || args.get(0).equalsIgnoreCase(PREFIX_ENGLISH)) {
             if (args.size() == 1)
                 return;
+            log.info("user: {}, args: {}", user, args);
             TextChannel channel = event.getChannel().asTextChannel();
 
             if (args.get(1).length() == 2 || args.get(1).length() == 3) {

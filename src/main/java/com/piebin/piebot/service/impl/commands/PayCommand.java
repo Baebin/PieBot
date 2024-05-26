@@ -30,7 +30,6 @@ public class PayCommand implements PieCommand {
     @Transactional
     public void execute(MessageReceivedEvent event) {
         List<String> args = CommandManager.getArgs(event);
-        log.info("args: {}", args);
 
         if (args.size() >= 3) {
             String userId = CommandManager.getMentionId(args.get(2));
