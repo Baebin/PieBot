@@ -9,6 +9,8 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class DiscordBotController {
+public class DiscordBotController implements ApplicationRunner {
     private static final String API = "/api/bot/";
 
     private static JDA jda;
@@ -59,5 +61,10 @@ public class DiscordBotController {
         status = false;
         log.info("Discord Bot Stopped");
         return ResponseEntity.ok(true);
+    }
+
+    @Override
+    public void run(ApplicationArguments args) {
+        run();
     }
 }
