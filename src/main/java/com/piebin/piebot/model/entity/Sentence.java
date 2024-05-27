@@ -23,6 +23,8 @@ public enum Sentence {
     OMOK("오목"),
     OMOK_RANK("오목 순위"),
 
+    GAMBLING_MUKCHIBA("묵찌빠 게임"),
+
     MONEY_RANK("자산 순위"),
     PATCH_NOTE("패치 노트"),
 

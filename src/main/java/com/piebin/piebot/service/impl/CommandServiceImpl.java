@@ -39,6 +39,7 @@ public class CommandServiceImpl implements CommandService {
     private final PatchNoteCommand patchNoteCommand;
     private final PayCommand payCommand;
     private final OmokCommand omokCommand;
+    private final GamblingCommand gamblingCommand;
     private final EasterEggCommand easterEggCommand;
     private final EasterEggListCommand easterEggListCommand;
 
@@ -105,6 +106,8 @@ public class CommandServiceImpl implements CommandService {
                         || parameter == CommandParameter.OMOK_PROFILE
                         || parameter == CommandParameter.OMOK_CONTINUE)
                     omokCommand.execute(event);
+                else if (parameter == CommandParameter.GAMBLING_MUKCHIBA)
+                    gamblingCommand.execute(event);
                 else if (parameter == CommandParameter.SECRET_EASTEREGG)
                     easterEggCommand.execute(event);
                 else if (parameter == CommandParameter.SECRET_EASTEREGG_LIST)
