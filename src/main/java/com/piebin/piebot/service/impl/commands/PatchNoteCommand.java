@@ -15,7 +15,6 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +24,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PatchNoteCommand implements PieCommand, PageService {
-    private final int OFFSET = 5;
+    private final int OFFSET = 10;
 
     private final PatchNoteRepository patchNoteRepository;
 
@@ -53,7 +52,7 @@ public class PatchNoteCommand implements PieCommand, PageService {
     private void addField(EmbedBuilder embedBuilder, PatchNote patchNote) {
         embedBuilder.addField(
                 patchNote.getMessage(),
-                DateTimeManager.getDate(patchNote.getRegDate()), true);
+                DateTimeManager.getDate(patchNote.getRegDate()), false);
     }
 
     @Override
