@@ -5,6 +5,7 @@ import com.piebin.piebot.model.repository.OmokRepository;
 import com.piebin.piebot.service.OmokSchedulerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +37,7 @@ public class OmokSchedulerServiceImpl implements OmokSchedulerService {
         return (o1.getWin() > o2.getWin() ? -1 : 1);
     };
 
+    @Async
     @Override
     @Transactional
     @Scheduled(fixedDelay = 60 * 1000)

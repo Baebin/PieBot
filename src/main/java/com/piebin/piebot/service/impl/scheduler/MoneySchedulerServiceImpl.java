@@ -5,6 +5,7 @@ import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.service.MoneySchedulerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,7 @@ public class MoneySchedulerServiceImpl implements MoneySchedulerService {
         return (o1.getMoney() > o2.getMoney() ? -1 : 1);
     };
 
+    @Async
     @Override
     @Transactional
     @Scheduled(fixedDelay = 60 * 1000)
