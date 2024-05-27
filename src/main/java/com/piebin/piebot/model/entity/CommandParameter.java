@@ -24,7 +24,7 @@ public enum CommandParameter {
     OMOK_PROFILE(null, new String[] { "omok", "오목" }, "[profile/프로필]", "오목 게임 프로필을 보여줍니다.", CommandMode.EQUAL),
     OMOK_CONTINUE(null, new String[] { "omok", "오목" }, "[continue/이어하기]", "오목 게임을 재개합니다.", CommandMode.EQUAL),
 
-    GAMBLING_MUKCHIBA(null, new String[] { "gambling", "도박" }, "[묵찌빠] [금액] [묵/찌/빠]", "묵찌바 게임을 시작합니다.", CommandMode.EQUAL),
+    GAMBLING_MUKCHIBA(null, new String[] { "gambling", "도박" }, "[묵찌빠] [금액] [묵/찌/빠]", "묵찌빠 게임을 시작합니다.", CommandMode.EQUAL),
     GAMBLING_SLOTMACHINE(null, new String[] { "gambling", "도박" }, "[슬롯머신] [금액]", "슬롯머신 게임을 시작합니다.", CommandMode.EQUAL),
 
     SECRET_EASTEREGG(null, new String[] { "이스터에그", "에그머니나" }, null, "잘 찾아보라구 ~", CommandMode.CONTAIN),
