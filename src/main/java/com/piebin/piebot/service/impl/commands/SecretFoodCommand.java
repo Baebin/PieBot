@@ -6,10 +6,12 @@ import com.piebin.piebot.utility.CommandManager;
 import com.piebin.piebot.utility.EmbedMessageHelper;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.util.List;
 
+@Service
 public class SecretFoodCommand implements PieCommand {
     @Override
     public void execute(MessageReceivedEvent event) {

@@ -24,6 +24,8 @@ public enum Sentence {
     OMOK_RANK("오목 순위"),
 
     MONEY_RANK("자산 순위"),
+    PATCH_NOTE("패치 노트"),
+
     RANK_REFRESH("마지막 갱신 시간"),
 
     REGISTER("회원가입");

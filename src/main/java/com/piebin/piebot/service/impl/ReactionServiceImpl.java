@@ -16,20 +16,19 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
 
 @Slf4j
 @Service
-@Component
 @RequiredArgsConstructor
 public class ReactionServiceImpl implements ReactionService {
     private final DiscordBotInfo botInfo;
 
     private final AccountService accountService;
 
+    private final PatchNoteReactionAdd patchNoteReactionAdd;
     private final MoneyRankReactionAdd moneyRankReactionAdd;
     private final OmokReactionAdd omokReactionAdd;
     private final OmokRankReactionAdd omokRankReactionAdd;
@@ -57,6 +56,10 @@ public class ReactionServiceImpl implements ReactionService {
         String title = embed.getTitle();
         if (title.startsWith(Sentence.HELP.getMessage())) {
             new HelpReactionAdd().execute(event);
+            return;
+        }
+        if (title.startsWith(Sentence.PATCH_NOTE.getMessage())) {
+            patchNoteReactionAdd.execute(event);
             return;
         }
         if (title.startsWith(Sentence.MONEY_RANK.getMessage())) {

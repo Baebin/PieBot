@@ -1,20 +1,21 @@
 package com.piebin.piebot.service.impl.commands;
 
-import com.piebin.piebot.model.domain.Account;
+import com.piebin.piebot.model.domain.PatchNote;
 import com.piebin.piebot.model.entity.Sentence;
 import com.piebin.piebot.model.entity.UniEmoji;
+import com.piebin.piebot.model.repository.PatchNoteRepository;
 import com.piebin.piebot.service.PageService;
 import com.piebin.piebot.service.PieCommand;
-import com.piebin.piebot.service.impl.scheduler.MoneySchedulerServiceImpl;
 import com.piebin.piebot.utility.CommandManager;
 import com.piebin.piebot.utility.DateTimeManager;
-import com.piebin.piebot.utility.NumberManager;
 import com.piebin.piebot.utility.PageManager;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,33 +24,10 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class MoneyRankCommand implements PieCommand, PageService {
-    private final int OFFSET = 15;
+public class PatchNoteCommand implements PieCommand, PageService {
+    private final int OFFSET = 5;
 
-    private void addField(EmbedBuilder embedBuilder, int rank) {
-        if (MoneySchedulerServiceImpl.moneyRankList.size() < rank) {
-            embedBuilder.addBlankField(true);
-            return;
-        }
-        Account account = MoneySchedulerServiceImpl.moneyRankList.get(rank - 1);
-        embedBuilder.addField(rank + "등. " + account.getName(), NumberManager.getNumber(account.getMoney()) + "빙", true);
-    }
-
-    @Override
-    public EmbedBuilder getPage(int page) {
-        page = PageManager.getPage(MoneySchedulerServiceImpl.moneyRankList.size(), OFFSET, page);
-
-        EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setTitle(Sentence.MONEY_RANK.getMessage() + " - " + page);
-        embedBuilder.setColor(Color.GREEN);
-
-        int from = (page - 1) * OFFSET + 1;
-        int to = (page) * OFFSET;
-        for (int rank = from; rank <= to; rank++)
-            addField(embedBuilder, rank);
-        embedBuilder.addField(Sentence.RANK_REFRESH.getMessage(), DateTimeManager.getDate(MoneySchedulerServiceImpl.moneyRankDateTime), false);
-        return embedBuilder;
-    }
+    private final PatchNoteRepository patchNoteRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -58,8 +36,8 @@ public class MoneyRankCommand implements PieCommand, PageService {
 
         int initPage = 1;
         if (args.size() >= 3) {
-            int totalCnt = MoneySchedulerServiceImpl.moneyRankList.size();
-            initPage = PageManager.getPage(totalCnt, OFFSET, args.get(2));
+            long totalCnt = patchNoteRepository.count();
+            initPage = PageManager.getPage((int)totalCnt, OFFSET, args.get(2));
         }
 
         TextChannel channel = event.getChannel().asTextChannel();
@@ -70,5 +48,25 @@ public class MoneyRankCommand implements PieCommand, PageService {
         message.addReaction(UniEmoji.ARROW_REFRESH.getEmoji()).queue();
         message.addReaction(UniEmoji.ARROW_RIGHT.getEmoji()).queue();
         message.addReaction(UniEmoji.ARROW_RIGHT_DOUBLE.getEmoji()).queue();
+    }
+
+    private void addField(EmbedBuilder embedBuilder, PatchNote patchNote) {
+        embedBuilder.addField(
+                patchNote.getMessage(),
+                DateTimeManager.getDate(patchNote.getRegDate()), true);
+    }
+
+    @Override
+    public EmbedBuilder getPage(int page) {
+        page = PageManager.getPage((int)patchNoteRepository.count(), OFFSET, page);
+
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+        embedBuilder.setTitle(Sentence.PATCH_NOTE.getMessage() + " - " + page);
+        embedBuilder.setColor(Color.GREEN);
+
+        PageRequest pageRequest = PageRequest.of(page - 1, OFFSET);
+        for (PatchNote patchNote : patchNoteRepository.findAll(pageRequest).getContent())
+            addField(embedBuilder, patchNote);
+        return embedBuilder;
     }
 }

@@ -10,9 +10,9 @@ import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 @RequiredArgsConstructor
 public class EasterEggListReactionAdd implements PieReactionAdd {
     private final EasterEggListCommand easterEggListCommand;

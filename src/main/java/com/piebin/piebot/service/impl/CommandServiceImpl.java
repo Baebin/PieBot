@@ -36,6 +36,7 @@ public class CommandServiceImpl implements CommandService {
     private final EasterEggHistoryRepository easterEggHistoryRepository;
 
     private final ProfileCommand profileCommand;
+    private final PatchNoteCommand patchNoteCommand;
     private final PayCommand payCommand;
     private final OmokCommand omokCommand;
     private final EasterEggCommand easterEggCommand;
@@ -95,6 +96,8 @@ public class CommandServiceImpl implements CommandService {
                 }
                 if (parameter == CommandParameter.PROFILE)
                     profileCommand.execute(event);
+                else if (parameter == CommandParameter.PATCH_NOTE)
+                    patchNoteCommand.execute(event);
                 else if (parameter == CommandParameter.PAY)
                     payCommand.execute(event);
                 else if (parameter == CommandParameter.OMOK_PVP

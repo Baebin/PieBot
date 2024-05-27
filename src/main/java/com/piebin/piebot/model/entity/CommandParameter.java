@@ -9,7 +9,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum CommandParameter {
     PROFILE(null, new String[] { "profile", "프로필" }, null, "프로필을 보여줍니다.", CommandMode.EQUAL),
+    PATCH_NOTE(null, new String[] { "patch", "패치" }, "[페이지]", "패치 노트를 보여줍니다.", CommandMode.CONTAIN),
     HELP(new HelpCommand(), new String[] { "help", "도움말", "명령어" }, "[페이지]", "명령어 목록을 보여줍니다.", CommandMode.EQUAL),
+
     PAY(null, new String[] { "pay", "송금" }, "[유저] [금액]", "상대방에게 돈을 송금합니다.", CommandMode.EQUAL),
     MONEY_RANK(new MoneyRankCommand(), new String[] { "money", "돈", "자산" }, "[페이지]", "유저들의 보유 자산 순위를 보여줍니다.", CommandMode.EQUAL),
 

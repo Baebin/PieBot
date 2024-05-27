@@ -16,7 +16,6 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@Component
 @RequiredArgsConstructor
 public class EasterEggListCommand implements PieCommand, PageService {
     private final EasterEggRepository easterEggRepository;

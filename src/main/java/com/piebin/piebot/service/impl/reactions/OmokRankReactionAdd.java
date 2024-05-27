@@ -11,9 +11,9 @@ import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class OmokRankReactionAdd implements PieReactionAdd {
     @Override
     public void execute(MessageReactionAddEvent event) {

@@ -13,17 +13,13 @@ import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.utils.FileUpload;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.*;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.Optional;
 
 @Service
-@Component
 @RequiredArgsConstructor
 public class ProfileCommand implements PieCommand {
     private final AccountRepository accountRepository;

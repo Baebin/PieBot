@@ -11,7 +11,6 @@ import com.piebin.piebot.service.impl.commands.OmokCommand;
 import com.piebin.piebot.utility.EmbedMessageHelper;
 import com.piebin.piebot.utility.ReactionManager;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageReaction;
@@ -23,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.awt.*;
 import java.util.Optional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OmokReactionAdd implements PieReactionAdd {

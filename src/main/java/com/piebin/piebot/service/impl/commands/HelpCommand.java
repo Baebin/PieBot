@@ -5,7 +5,6 @@ import com.piebin.piebot.model.entity.Sentence;
 import com.piebin.piebot.service.PageService;
 import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.service.impl.CommandServiceImpl;
-import com.piebin.piebot.service.impl.scheduler.MoneySchedulerServiceImpl;
 import com.piebin.piebot.utility.CommandManager;
 import com.piebin.piebot.utility.EmojiManager;
 import com.piebin.piebot.utility.PageManager;
@@ -13,11 +12,13 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 
+@Service
 public class HelpCommand implements PieCommand, PageService {
     public static int PAGES = 4;
 

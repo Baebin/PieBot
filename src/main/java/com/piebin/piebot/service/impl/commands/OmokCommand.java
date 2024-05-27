@@ -19,7 +19,6 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.utils.FileUpload;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +28,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@Component
 @RequiredArgsConstructor
 public class OmokCommand implements PieCommand, OmokService {
     private final AccountRepository accountRepository;

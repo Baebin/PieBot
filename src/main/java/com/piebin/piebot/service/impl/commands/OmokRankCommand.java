@@ -15,7 +15,6 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +22,6 @@ import java.awt.*;
 import java.util.List;
 
 @Service
-@Component
 @RequiredArgsConstructor
 public class OmokRankCommand implements PieCommand, PageService {
     private final int OFFSET = 10;
