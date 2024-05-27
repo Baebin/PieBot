@@ -26,10 +26,12 @@ public enum CommandSentence {
     OMOK_CONTINUE_NONE("오목 이어하기", "진행중인 게임이 존재하지 않습니다.", "유저에게 오목 대전을 신청해주세요."),
 
     // Gambling
-    GAMBLING_ARG1("도박", "[묵찌빠]", "올바르지 않은 명령어입니다."),
+    GAMBLING_ARG1("도박", "[묵찌빠/슬롯머신]", "올바르지 않은 명령어입니다."),
     GAMBLING_MUKCHIBA_ARG2_MIN("묵찌빠 게임", "최소 금액은 1빙입니다.", "보유 자산: {A}빙"),
     GAMBLING_MUKCHIBA_ARG2_LESS("묵찌빠 게임", "잔여 금액이 부족합니다.", "보유 자산: {A}빙"),
     GAMBLING_MUKCHIBA_ARG3("묵찌빠 게임", "[묵/찌/빠]", "올바르지 않은 명령어입니다."),
+    GAMBLING_SLOTMACHINE_ARG2_MIN("슬롯머신 게임", "최소 금액은 1빙입니다.", "보유 자산: {A}빙"),
+    GAMBLING_SLOTMACHINE_ARG2_LESS("슬롯머신 게임", "잔여 금액이 부족합니다.", "보유 자산: {A}빙"),
 
     // Secret
     SECRET_EASTEREGG("Q. 에그를 찾아서", "모든 이스터에그를 찾으면 빈이가 밥을 사준다는 전설이 있다구", "이스터에그는 총 {A}개나 있단다?"),

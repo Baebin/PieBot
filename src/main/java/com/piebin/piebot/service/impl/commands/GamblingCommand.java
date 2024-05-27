@@ -13,7 +13,7 @@ import com.piebin.piebot.utility.EmbedMessageHelper;
 import com.piebin.piebot.utility.NumberManager;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +36,10 @@ public class GamblingCommand implements PieCommand, GamblingService {
         if (args.size() >= 3) {
             if (args.get(2).equals("묵찌빠")) {
                 runMukchiba(event);
+                return;
+            }
+            if (args.get(2).equals("슬롯머신")) {
+                runSlotMachine(event);
                 return;
             }
         }
@@ -80,7 +84,6 @@ public class GamblingCommand implements PieCommand, GamblingService {
         if (optional.isEmpty())
             return;
         Account account = optional.get();
-
         List<String> args = CommandManager.getArgs(event);
         if (args.size() >= 4) {
             try {
@@ -126,11 +129,11 @@ public class GamblingCommand implements PieCommand, GamblingService {
                     lines.add("빙구 1" + " : " + getMukchiba(o1));
                     lines.add("빙구 2" + " : " + getMukchiba(o2));
                     lines.add("");
-                    lines.add("결과: " + states[0].getResult() + states[1].getResult());
-                    lines.add("적용 배율: " + (weight == (long) weight ? (long) weight : weight) + "배");
-                    lines.add("배팅 금액: " + NumberManager.getNumber(money) + "빙");
-                    lines.add("받은 금액: " + NumberManager.getNumber(reward) + "빙");
-                    lines.add("보유 자산: " + NumberManager.getNumber(account.getMoney()) + "빙");
+                    lines.add("결과 : " + states[0].getResult() + states[1].getResult());
+                    lines.add("적용 배율 : " + (weight == (long) weight ? (long) weight : weight) + "배");
+                    lines.add("배팅 금액 : " + NumberManager.getNumber(money) + "빙");
+                    lines.add("받은 금액 : " + NumberManager.getNumber(reward) + "빙");
+                    lines.add("보유 자산 : " + NumberManager.getNumber(account.getMoney()) + "빙");
 
                     String description = String.join("\n", lines);
                     embedBuilder.appendDescription(description);
@@ -141,6 +144,81 @@ public class GamblingCommand implements PieCommand, GamblingService {
             } catch (Exception e) {}
         }
         EmbedDto dto = new EmbedDto(CommandSentence.GAMBLING_MUKCHIBA_ARG2_MIN, Color.RED);
+        dto.changeDescription(NumberManager.getNumber(account.getMoney()));
+        EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+    }
+
+    @Override
+    public void runSlotMachine(MessageReceivedEvent event) {
+        Optional<Account> optional = accountRepository.findById(event.getAuthor().getId());
+        if (optional.isEmpty())
+            return;
+        Account account = optional.get();
+
+        List<String> args = CommandManager.getArgs(event);
+        if (args.size() >= 4) {
+            try {
+                long money = Long.parseLong(args.get(3));
+                if (1 <= money) {
+                    if (account.getMoney() < money) {
+                        EmbedDto dto = new EmbedDto(CommandSentence.GAMBLING_MUKCHIBA_ARG2_MIN, Color.RED);
+                        dto.changeDescription(NumberManager.getNumber(account.getMoney()));
+                        EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+                        return;
+                    }
+                    String[] emojis = { ":star:", ":apple:", ":mango:", ":banana:", ":tangerine:" };
+
+                    int o1 = new Random().nextInt(5);
+                    int o2 = new Random().nextInt(5);
+                    int o3 = new Random().nextInt(5);
+
+                    int cnt, weight;
+                    if (o1 == o2 && o2 == o3) {
+                        cnt = 3;
+                        if (o1 == 0)
+                            weight = 7;
+                        else weight = 5;
+                    } else if (o1 == o2 || o1 == o3 || o2 == o3) {
+                        int idx;
+                        if (o1 == o2)
+                            idx = o1;
+                        else if (o1 == o3)
+                            idx = o1;
+                        else idx = o2;
+
+                        cnt = 2;
+                        // Star
+                        if (idx == 0)
+                            weight = 3;
+                        else weight = 2;
+                    } else {
+                        cnt = 1;
+                        weight = 0;
+                    }
+                    long reward = (money * weight);
+                    account.setMoney(account.getMoney() + reward - money);
+
+                    EmbedBuilder embedBuilder = new EmbedBuilder();
+                    embedBuilder.setTitle(Sentence.GAMBLING_SLOTMACHINE.getMessage());
+                    embedBuilder.setColor((weight == 0 ? Color.RED : (weight < 1 ? Color.YELLOW : Color.GREEN)));
+
+                    List<String> lines = new ArrayList<>();
+                    lines.add("결과 : " + (cnt == 1 ? "실패" : cnt + "개 성공"));
+                    lines.add("적용 배율 : " + weight + "배");
+                    lines.add("배팅 금액 : " + NumberManager.getNumber(money) + "빙");
+                    lines.add("받은 금액 : " + NumberManager.getNumber(reward) + "빙");
+                    lines.add("보유 자산 : " + NumberManager.getNumber(account.getMoney()) + "빙");
+
+                    String description = String.join("\n", lines);
+                    embedBuilder.appendDescription(description);
+
+                    Message message = event.getMessage().replyEmbeds(embedBuilder.build()).complete();
+                    message.reply(emojis[o1] + " " + emojis[o2] + " " + emojis[o3]).queue();
+                    return;
+                }
+            } catch (Exception e) {}
+        }
+        EmbedDto dto = new EmbedDto(CommandSentence.GAMBLING_SLOTMACHINE_ARG2_MIN, Color.RED);
         dto.changeDescription(NumberManager.getNumber(account.getMoney()));
         EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
     }
