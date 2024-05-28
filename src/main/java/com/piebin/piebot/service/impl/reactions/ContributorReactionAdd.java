@@ -10,11 +10,11 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class ContributorReactionAdd implements PieReactionAdd {
-    private final ContributorCommand command;
+    private final ContributorCommand contributorCommand;
 
     @Override
     public void execute(MessageReactionAddEvent event) {
-        PageReactionAdd pageReactionAdd = new PageReactionAdd(Sentence.CONTRIBUTOR, command);
+        PageReactionAdd pageReactionAdd = new PageReactionAdd(Sentence.CONTRIBUTOR, contributorCommand);
         pageReactionAdd.execute(event);
     }
 }

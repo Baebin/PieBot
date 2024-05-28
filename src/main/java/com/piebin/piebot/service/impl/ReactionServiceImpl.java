@@ -28,6 +28,7 @@ public class ReactionServiceImpl implements ReactionService {
 
     private final AccountService accountService;
 
+    private final HelpReactionAdd helpReactionAdd;
     private final PatchNoteReactionAdd patchNoteReactionAdd;
     private final MoneyRankReactionAdd moneyRankReactionAdd;
     private final OmokReactionAdd omokReactionAdd;
@@ -56,7 +57,7 @@ public class ReactionServiceImpl implements ReactionService {
             return;
         String title = embed.getTitle();
         if (title.startsWith(Sentence.HELP.getMessage())) {
-            new HelpReactionAdd().execute(event);
+            helpReactionAdd.execute(event);
             return;
         }
         if (title.startsWith(Sentence.PATCH_NOTE.getMessage())) {

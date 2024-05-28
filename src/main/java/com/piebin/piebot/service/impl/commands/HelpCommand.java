@@ -64,7 +64,7 @@ public class HelpCommand implements PieCommand, PageService {
                 addField(embedBuilder, CommandParameter.SECRET_EASTEREGG_LIST);
                 break;
             default:
-                break;
+                return null;
         }
         return embedBuilder;
     }
