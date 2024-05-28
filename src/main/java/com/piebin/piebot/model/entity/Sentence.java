@@ -28,6 +28,7 @@ public enum Sentence {
 
     MONEY_RANK("자산 순위"),
     PATCH_NOTE("패치 노트"),
+    CONTRIBUTOR("기여자"),
 
     RANK_REFRESH("마지막 갱신 시간"),
 

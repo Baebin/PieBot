@@ -32,6 +32,7 @@ public class ReactionServiceImpl implements ReactionService {
     private final MoneyRankReactionAdd moneyRankReactionAdd;
     private final OmokReactionAdd omokReactionAdd;
     private final OmokRankReactionAdd omokRankReactionAdd;
+    private final ContributorReactionAdd contributorReactionAdd;
     private final EasterEggListReactionAdd easterEggListReactionAdd;
 
     @Override
@@ -72,6 +73,10 @@ public class ReactionServiceImpl implements ReactionService {
         }
         if (title.startsWith(Sentence.OMOK.getMessage())) {
             omokReactionAdd.execute(event);
+            return;
+        }
+        if (title.startsWith(Sentence.CONTRIBUTOR.getMessage())) {
+            contributorReactionAdd.execute(event);
             return;
         }
         if (title.startsWith(Sentence.EASTER_EGG_LIST.getMessage())) {

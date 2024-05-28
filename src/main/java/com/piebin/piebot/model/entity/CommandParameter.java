@@ -27,6 +27,7 @@ public enum CommandParameter {
     GAMBLING_MUKCHIBA(null, new String[] { "gambling", "도박" }, "[묵찌빠] [금액] [묵/찌/빠]", "묵찌빠 게임을 시작합니다.", CommandMode.EQUAL),
     GAMBLING_SLOTMACHINE(null, new String[] { "gambling", "도박" }, "[슬롯머신] [금액]", "슬롯머신 게임을 시작합니다.", CommandMode.EQUAL),
 
+    CONTRIBUTOR(null, new String[] { "contributor", "기여자" }, "[페이지]", "빙구봇에 도움을 주신 분들입니다.", CommandMode.EQUAL),
     SECRET_EASTEREGG(null, new String[] { "이스터에그", "에그머니나" }, null, "잘 찾아보라구 ~", CommandMode.CONTAIN),
     SECRET_EASTEREGG_LIST(null, new String[] { "전당", "명예전당", "명예의전당" }, null, "이 기록을 빙구에게 바칩니다.", CommandMode.CONTAIN),
 
