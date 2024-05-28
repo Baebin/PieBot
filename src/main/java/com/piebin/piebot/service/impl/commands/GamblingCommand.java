@@ -3,11 +3,13 @@ package com.piebin.piebot.service.impl.commands;
 import com.piebin.piebot.model.domain.Account;
 import com.piebin.piebot.model.dto.embed.EmbedDto;
 import com.piebin.piebot.model.entity.CommandSentence;
+import com.piebin.piebot.model.entity.DiscordEmoji;
 import com.piebin.piebot.model.entity.ResultState;
 import com.piebin.piebot.model.entity.Sentence;
 import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.service.GamblingService;
 import com.piebin.piebot.service.PieCommand;
+import com.piebin.piebot.service.TaskSchedulerService;
 import com.piebin.piebot.utility.CommandManager;
 import com.piebin.piebot.utility.EmbedMessageHelper;
 import com.piebin.piebot.utility.NumberManager;
@@ -19,15 +21,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
-import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
 public class GamblingCommand implements PieCommand, GamblingService {
     private final AccountRepository accountRepository;
+
+    private final TaskSchedulerService taskSchedulerService;
 
     @Override
     @Transactional
@@ -149,6 +151,7 @@ public class GamblingCommand implements PieCommand, GamblingService {
     }
 
     @Override
+    @Transactional
     public void runSlotMachine(MessageReceivedEvent event) {
         Optional<Account> optional = accountRepository.findById(event.getAuthor().getId());
         if (optional.isEmpty())
@@ -166,8 +169,11 @@ public class GamblingCommand implements PieCommand, GamblingService {
                         EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
                         return;
                     }
-                    String[] emojis = { ":star:", ":apple:", ":mango:", ":banana:", ":tangerine:" };
-
+                    DiscordEmoji[] emojis = {
+                            DiscordEmoji.FRUIT_COCONUT,
+                            DiscordEmoji.FRUIT_APPLE, DiscordEmoji.FRUIT_MANGO,
+                            DiscordEmoji.FRUIT_PLUM, DiscordEmoji.FRUIT_PITCH
+                    };
                     int o1 = new Random().nextInt(5);
                     int o2 = new Random().nextInt(5);
                     int o3 = new Random().nextInt(5);
@@ -200,20 +206,33 @@ public class GamblingCommand implements PieCommand, GamblingService {
 
                     EmbedBuilder embedBuilder = new EmbedBuilder();
                     embedBuilder.setTitle(Sentence.GAMBLING_SLOTMACHINE.getMessage());
-                    embedBuilder.setColor((weight == 0 ? Color.RED : (weight < 1 ? Color.YELLOW : Color.GREEN)));
+                    embedBuilder.setDescription("추첨중 ....");
 
-                    List<String> lines = new ArrayList<>();
-                    lines.add("결과 : " + (cnt == 1 ? "실패" : cnt + "개 성공"));
-                    lines.add("적용 배율 : " + weight + "배");
-                    lines.add("배팅 금액 : " + NumberManager.getNumber(money) + "빙");
-                    lines.add("받은 금액 : " + NumberManager.getNumber(reward) + "빙");
-                    lines.add("보유 자산 : " + NumberManager.getNumber(account.getMoney()) + "빙");
+                    String randomFruits = DiscordEmoji.FRUIT_RANDOM.getEmoji() + DiscordEmoji.FRUIT_RANDOM.getEmoji() + DiscordEmoji.FRUIT_RANDOM.getEmoji();
+                    String resultFruits = emojis[o1].getEmoji() + " " + emojis[o2].getEmoji() + " " + emojis[o3].getEmoji();
 
-                    String description = String.join("\n", lines);
-                    embedBuilder.appendDescription(description);
+                    Message mainMsg = event.getMessage().replyEmbeds(embedBuilder.build()).complete();
+                    Message subMsg = event.getChannel().sendMessage(randomFruits).complete();
 
-                    Message message = event.getMessage().replyEmbeds(embedBuilder.build()).complete();
-                    message.reply(emojis[o1] + " " + emojis[o2] + " " + emojis[o3]).queue();
+                    taskSchedulerService.runAfterSeconds(
+                            () -> {
+                                embedBuilder.setColor((weight == 0 ? Color.RED : (weight < 1 ? Color.YELLOW : Color.GREEN)));
+
+                                List<String> lines = new ArrayList<>();
+                                lines.add("결과 : " + (cnt == 1 ? "실패" : cnt + "개 성공"));
+                                lines.add("적용 배율 : " + weight + "배");
+                                lines.add("배팅 금액 : " + NumberManager.getNumber(money) + "빙");
+                                lines.add("받은 금액 : " + NumberManager.getNumber(reward) + "빙");
+                                lines.add("보유 자산 : " + NumberManager.getNumber(account.getMoney()) + "빙");
+
+                                String description = String.join("\n", lines);
+                                embedBuilder.setDescription(description);
+
+                                subMsg.editMessage(resultFruits).queue();
+                                mainMsg.editMessageEmbeds(embedBuilder.build()).queue();
+                            },
+                            2
+                    );
                     return;
                 }
             } catch (Exception e) {}
