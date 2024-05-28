@@ -57,6 +57,9 @@ public class HelpCommand implements PieCommand, PageService {
                 embedBuilder.setTitle(Sentence.HELP_3.getMessage());
                 addField(embedBuilder, CommandParameter.PAY);
                 addField(embedBuilder, CommandParameter.MONEY_RANK);
+                embedBuilder.addBlankField(false);
+                addField(embedBuilder, CommandParameter.REWARD);
+                addField(embedBuilder, CommandParameter.ATTENDANCE);
                 break;
             case 4:
                 embedBuilder.setTitle(Sentence.HELP_4.getMessage());

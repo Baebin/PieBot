@@ -33,6 +33,12 @@ public enum CommandSentence {
     GAMBLING_SLOTMACHINE_ARG2_MIN("슬롯머신 게임", "최소 금액은 1빙입니다.", "보유 자산: {A}빙"),
     GAMBLING_SLOTMACHINE_ARG2_LESS("슬롯머신 게임", "잔여 금액이 부족합니다.", "보유 자산: {A}빙"),
 
+    REWARD_WAITING("리워드", "잠시 후에 시도해주세요.", "{A}분에 한 번만 가능합니다."),
+    REWARD_COMPLETED("리워드", "{A}빙이 지급되었습니다.", "보유 자산: {A}빙"),
+
+    ATTENDANCE_WAITING("출석체크", "잠시 후에 시도해주세요.", "하루에 한 번만 가능합니다."),
+    ATTENDANCE_COMPLETED("{A}일차 출석", "{A}빙이 지급되었습니다.", "보유 자산: {A}빙"),
+
     // Secret
     SECRET_EASTEREGG("Q. 에그를 찾아서", "모든 이스터에그를 찾으면 빈이가 밥을 사준다는 전설이 있다구", "이스터에그는 총 {A}개나 있단다?"),
 
