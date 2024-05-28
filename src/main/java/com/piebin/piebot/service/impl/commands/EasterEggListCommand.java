@@ -48,7 +48,7 @@ public class EasterEggListCommand implements PieCommand, PageService {
         embedBuilder.setColor(Color.GREEN);
 
         long totalCnt = easterEggRepository.count();
-        List<EasterEggHistory> histories = easterEggHistoryRepository.findAll();
+        List<EasterEggHistory> histories = easterEggHistoryRepository.findAllByIsFirst(true);
 
         Map<Long, EasterEggHistory> historyMap = new HashMap<>();
         for (EasterEggHistory history : histories)

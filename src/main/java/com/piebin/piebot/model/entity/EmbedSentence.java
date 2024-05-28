@@ -15,7 +15,8 @@ public enum EmbedSentence {
     OMOK_PVP_STARTED("오목 대전", "게임이 시작되었습니다.", "즐거운 플레이 되세요."),
     OMOK_PVP_WIN("오목 대전", "{A} 승리", "게임이 종료되었습니다."),
 
-    EASTER_EGG_FIND("이스터에그", "해당 이스터에그의 최초 발견자입니다.\n업적 달성 보상으로 3,000빙이 입금되었습니다.", "이 업적은 명예의 전당에 자동으로 기록됩니다.");
+    EASTER_EGG_FIND("이스터에그", "해당 이스터에그의 최초 발견자입니다.\n업적 달성 보상으로 3,000빙이 입금되었습니다.", "이 업적은 명예의 전당에 자동으로 기록됩니다."),
+    EASTER_EGG_FIND_ALREADY("이스터에그", "해당 이스터에그를 처음 발견했습니다.\n업적 달성 보상으로 1,000빙이 입금되었습니다.", "최초 발견자가 아니므로 명예의 전당에 기록되지 않습니다.");;
 
     private final String title;
     private final String message;

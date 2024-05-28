@@ -131,19 +131,32 @@ public class CommandServiceImpl implements CommandService {
     @Override
     @Transactional
     public void recordEasterEgg(String id, EasterEgg easterEgg, Message message) {
-        if (easterEggHistoryRepository.existsByEasterEgg(easterEgg))
-            return;
         Optional<Account> optional = accountRepository.findById(id);
         if (optional.isEmpty())
             return;
         Account account = optional.get();
-        account.setMoney(account.getMoney() + 3000);
-        EasterEggHistory easterEggHistory = EasterEggHistory.builder()
-                .account(account)
-                .easterEgg(easterEgg)
-                .build();
-        easterEggHistoryRepository.save(easterEggHistory);
+        if (easterEggHistoryRepository.existsByEasterEgg(easterEgg)) {
+            if (easterEggHistoryRepository.existsByAccountAndEasterEgg(account, easterEgg))
+                return;
+            account.setMoney(account.getMoney() + 300);
+            EasterEggHistory easterEggHistory = EasterEggHistory.builder()
+                    .account(account)
+                    .easterEgg(easterEgg)
+                    .isFirst(false)
+                    .build();
+            easterEggHistoryRepository.save(easterEggHistory);
 
-        message.replyEmbeds(EmbedMessageHelper.getEmbedBuilder(EmbedSentence.EASTER_EGG_FIND, Color.CYAN).build()).queue();
+            message.replyEmbeds(EmbedMessageHelper.getEmbedBuilder(EmbedSentence.EASTER_EGG_FIND_ALREADY, Color.CYAN).build()).queue();
+        } else {
+            account.setMoney(account.getMoney() + 3000);
+            EasterEggHistory easterEggHistory = EasterEggHistory.builder()
+                    .account(account)
+                    .easterEgg(easterEgg)
+                    .isFirst(true)
+                    .build();
+            easterEggHistoryRepository.save(easterEggHistory);
+
+            message.replyEmbeds(EmbedMessageHelper.getEmbedBuilder(EmbedSentence.EASTER_EGG_FIND, Color.CYAN).build()).queue();
+        }
     }
 }

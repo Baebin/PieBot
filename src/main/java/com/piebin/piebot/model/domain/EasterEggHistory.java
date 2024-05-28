@@ -22,10 +22,13 @@ public class EasterEggHistory {
     @ManyToOne
     private Account account;
 
-    @OneToOne
+    @ManyToOne
     private EasterEgg easterEgg;
 
     @CreatedDate
     @Column(name = "reg_date")
     private LocalDateTime regDate;
+
+    @Builder.Default
+    private boolean isFirst = false;
 }
