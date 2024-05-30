@@ -22,7 +22,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class RewardCommand implements PieCommand {
-    private static final long REWARD = 100;
+    private static final long REWARD_MIN = 100;
+    private static final double REWARD_WEIGHT = 0.5;
     private static final long MINUTES = 10;
 
     private final AccountRepository accountRepository;
@@ -55,10 +56,11 @@ public class RewardCommand implements PieCommand {
             attendance.setRewardCount(attendance.getRewardCount() + 1);
             attendance.setRewardDateTime(LocalDateTime.now());
         }
-        account.setMoney(account.getMoney() + REWARD);
+        long reward = Math.max(REWARD_MIN, (long)(account.getMoney() * REWARD_WEIGHT / 100));
+        account.setMoney(account.getMoney() + reward);
 
         EmbedDto dto = new EmbedDto(CommandSentence.REWARD_COMPLETED, Color.GREEN);
-        dto.changeMessage(NumberManager.getNumber(REWARD));
+        dto.changeMessage(NumberManager.getNumber(reward));
         dto.changeDescription(NumberManager.getNumber(account.getMoney()));
         EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
     }

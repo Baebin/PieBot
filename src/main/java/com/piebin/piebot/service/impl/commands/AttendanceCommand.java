@@ -22,7 +22,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class AttendanceCommand implements PieCommand {
-    private static final long REWARD = 2000;
+    private static final long REWARD_MIN = 3000;
+    private static final double REWARD_WEIGHT = 10.0;
 
     private final AccountRepository accountRepository;
     private final AttendanceRepository attendanceRepository;
@@ -54,11 +55,12 @@ public class AttendanceCommand implements PieCommand {
             attendance.setCount(attendance.getCount() + 1);
             attendance.setDateTime(LocalDateTime.now());
         }
-        account.setMoney(account.getMoney() + REWARD);
+        long reward = Math.max(REWARD_MIN, (long)(account.getMoney() * REWARD_WEIGHT / 100));
+        account.setMoney(account.getMoney() + reward);
 
         EmbedDto dto = new EmbedDto(CommandSentence.ATTENDANCE_COMPLETED, Color.GREEN);
         dto.changeTitle(NumberManager.getNumber(attendance.getCount()));
-        dto.changeMessage(NumberManager.getNumber(REWARD));
+        dto.changeMessage(NumberManager.getNumber(reward));
         dto.changeDescription(NumberManager.getNumber(account.getMoney()));
         EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
     }
