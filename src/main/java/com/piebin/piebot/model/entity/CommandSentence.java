@@ -30,6 +30,7 @@ public enum CommandSentence {
     GAMBLING_MUKCHIBA_ARG2_MIN("묵찌빠 게임", "최소 금액은 1빙입니다.", "보유 자산: {A}빙"),
     GAMBLING_MUKCHIBA_ARG2_LESS("묵찌빠 게임", "잔여 금액이 부족합니다.", "보유 자산: {A}빙"),
     GAMBLING_MUKCHIBA_ARG3("묵찌빠 게임", "[묵/찌/빠]", "올바르지 않은 명령어입니다."),
+    GAMBLING_MUKCHIBA_RUN("묵찌빠 게임", "배팅 금액: {A}빙", "이모지를 눌러주세요."),
     GAMBLING_SLOTMACHINE_ARG2_MIN("슬롯머신 게임", "최소 금액은 1빙입니다.", "보유 자산: {A}빙"),
     GAMBLING_SLOTMACHINE_ARG2_LESS("슬롯머신 게임", "잔여 금액이 부족합니다.", "보유 자산: {A}빙"),
 

@@ -6,4 +6,10 @@ public class NumberManager {
     public static String getNumber(Long num) {
         return NumberFormat.getInstance().format(num);
     }
+
+    public static String getNumber(double num) {
+        if (num == (long) num)
+            return "" + (int)num;
+        return "" + num;
+    }
 }

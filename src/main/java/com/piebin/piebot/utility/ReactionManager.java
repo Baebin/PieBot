@@ -13,6 +13,14 @@ public class ReactionManager {
         }
     }
 
+    static public MessageEmbed getEmbed(Message message) {
+        try {
+            return message.getEmbeds().get(0);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     static public MessageEmbed getEmbed(MessageReactionAddEvent event) {
         try {
             Message message = event.retrieveMessage().complete();
