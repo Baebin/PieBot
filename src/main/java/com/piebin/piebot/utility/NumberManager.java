@@ -7,7 +7,7 @@ public class NumberManager {
         return NumberFormat.getInstance().format(num);
     }
 
-    public static String getNumber(double num) {
+    public static String parseString(double num) {
         if (num == (long) num)
             return "" + (int)num;
         return "" + num;

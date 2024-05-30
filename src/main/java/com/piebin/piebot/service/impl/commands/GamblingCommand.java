@@ -203,7 +203,7 @@ public class GamblingCommand implements PieCommand, GamblingService {
                     lines.add("구빙" + " : " + getMukchiba(o2));
                     lines.add("");
                     lines.add("결과 : " + states[0].getResult() + states[1].getResult());
-                    lines.add("적용 배율 : " + NumberManager.getNumber(weight) + "배");
+                    lines.add("적용 배율 : " + NumberManager.parseString(weight) + "배");
                     lines.add("배팅 금액 : " + NumberManager.getNumber(money) + "빙");
                     lines.add("받은 금액 : " + NumberManager.getNumber(reward) + "빙");
                     lines.add("보유 자산 : " + NumberManager.getNumber(account.getMoney()) + "빙");
