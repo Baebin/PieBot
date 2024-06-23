@@ -2,8 +2,10 @@ package com.piebin.piebot.model.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,4 +33,7 @@ public class Inventory {
             return;
         items.remove(item);
     }
+
+    @CreatedDate
+    private LocalDate regDate;
 }
