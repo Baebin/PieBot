@@ -5,7 +5,7 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -26,5 +26,5 @@ public class ShopHistory {
     private ItemInfo itemInfo;
 
     @CreatedDate
-    private LocalDate regDate;
+    private LocalDateTime regDate;
 }

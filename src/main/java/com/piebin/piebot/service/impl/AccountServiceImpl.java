@@ -3,7 +3,9 @@ package com.piebin.piebot.service.impl;
 import com.piebin.piebot.exception.AccountException;
 import com.piebin.piebot.exception.entity.AccountErrorCode;
 import com.piebin.piebot.model.domain.Account;
+import com.piebin.piebot.model.domain.Inventory;
 import com.piebin.piebot.model.repository.AccountRepository;
+import com.piebin.piebot.model.repository.InventoryRepository;
 import com.piebin.piebot.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.entities.Member;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
+    private final InventoryRepository inventoryRepository;
 
     @Override
     @Transactional
@@ -26,6 +29,11 @@ public class AccountServiceImpl implements AccountService {
                 .name(member.getNickname())
                 .build();
         accountRepository.save(account);
+
+        Inventory inventory = Inventory.builder()
+                .account(account)
+                .build();
+        inventoryRepository.save(inventory);
     }
 
     @Override
