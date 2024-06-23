@@ -9,11 +9,10 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.utils.FileUpload;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
 
 import java.awt.*;
-import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 @Slf4j
 @Service
@@ -31,12 +30,11 @@ public class TestCommand implements PieCommand {
         EmbedMessageHelper.replyEmbedMessage(message, dto);
 
         try {
-            File file = ResourceUtils.getFile("classpath:" + "omok\\omok_board_skin_1.jpg");
-            FileUpload fileUpload = FileUpload.fromData(file);
+            ClassPathResource resource = new ClassPathResource("omok/omok_board_skin_1.jpg");
+            FileUpload fileUpload = FileUpload.fromData(resource.getFile());
             message.replyFiles(fileUpload).queue();
-        } catch (FileNotFoundException e) {
-            log.info("Test 2");
-            throw new RuntimeException(e);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
