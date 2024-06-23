@@ -33,7 +33,12 @@ public enum CommandParameter {
     SECRET_EASTEREGG(null, new String[] { "이스터에그", "에그머니나" }, null, "잘 찾아보라구 ~", CommandMode.CONTAIN),
     SECRET_EASTEREGG_LIST(null, new String[] { "전당", "명예전당", "명예의전당" }, null, "이 기록을 빙구에게 바칩니다.", CommandMode.CONTAIN),
 
-    SECRET_FOOD(new SecretFoodCommand(), new String[] { "answer", "정답" }, "Secret", "시크릿 명령어입니다.", CommandMode.CONTAIN);
+    SECRET_FOOD(new SecretFoodCommand(), new String[] { "answer", "정답" }, "Secret", "시크릿 명령어입니다.", CommandMode.CONTAIN),
+
+    // Test
+    SECRET_TEST(new TestCommand(), new String[] { "test", "테스트" }, "Secret", "테스트용 명령어입니다.", CommandMode.CONTAIN)
+
+    ;
 
     private final PieCommand command;
 

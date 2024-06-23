@@ -2,13 +2,11 @@ package com.piebin.piebot.model.dto.embed;
 
 import com.piebin.piebot.model.entity.CommandSentence;
 import com.piebin.piebot.model.entity.EmbedSentence;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.awt.*;
 
+@Setter
 @Getter
 @Builder
 @NoArgsConstructor
