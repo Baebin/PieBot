@@ -37,7 +37,7 @@ public enum CommandSentence {
     REWARD_WAITING("리워드", "잠시 후에 시도해주세요.", "{A}분에 한 번만 가능합니다."),
     REWARD_COMPLETED("리워드", "{A}빙이 지급되었습니다.", "보유 자산: {A}빙"),
 
-    ATTENDANCE_WAITING("출석체크", "잠시 후에 시도해주세요.", "하루에 한 번만 가능합니다."),
+    ATTENDANCE_WAITING("출석체크", "내일 다시 시도해주세요.", "하루에 한 번만 가능합니다."),
     ATTENDANCE_COMPLETED("{A}일차 출석", "{A}빙이 지급되었습니다.", "보유 자산: {A}빙"),
 
     // Secret

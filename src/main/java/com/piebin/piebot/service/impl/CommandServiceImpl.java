@@ -4,12 +4,14 @@ import com.piebin.piebot.model.domain.Account;
 import com.piebin.piebot.model.domain.EasterEgg;
 import com.piebin.piebot.model.domain.EasterEggHistory;
 import com.piebin.piebot.model.domain.EasterEggWord;
+import com.piebin.piebot.model.dto.embed.EmbedDto;
 import com.piebin.piebot.model.entity.*;
 import com.piebin.piebot.model.repository.*;
 import com.piebin.piebot.service.CommandService;
 import com.piebin.piebot.service.impl.commands.*;
 import com.piebin.piebot.utility.CommandManager;
 import com.piebin.piebot.utility.EmbedMessageHelper;
+import com.piebin.piebot.utility.NumberManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
@@ -138,7 +140,10 @@ public class CommandServiceImpl implements CommandService {
         if (easterEggHistoryRepository.existsByEasterEgg(easterEgg)) {
             if (easterEggHistoryRepository.existsByAccountAndEasterEgg(account, easterEgg))
                 return;
-            account.setMoney(account.getMoney() + 300);
+            // [2'000, 5%]
+            long reward = Math.max(2000, (account.getMoney() * 5 / 100));
+            account.setMoney(account.getMoney() + reward);
+
             EasterEggHistory easterEggHistory = EasterEggHistory.builder()
                     .account(account)
                     .easterEgg(easterEgg)
@@ -146,9 +151,14 @@ public class CommandServiceImpl implements CommandService {
                     .build();
             easterEggHistoryRepository.save(easterEggHistory);
 
-            message.replyEmbeds(EmbedMessageHelper.getEmbedBuilder(EmbedSentence.EASTER_EGG_FIND_ALREADY, Color.CYAN).build()).queue();
+            EmbedDto dto = new EmbedDto(EmbedSentence.EASTER_EGG_FIND_ALREADY, Color.CYAN);
+            dto.changeMessage(NumberManager.getNumber(reward));
+            EmbedMessageHelper.replyEmbedMessage(message, dto);
         } else {
-            account.setMoney(account.getMoney() + 3000);
+            // [10'000, 25%]
+            long reward = Math.max(10000, (account.getMoney() * 25 / 100));
+            account.setMoney(account.getMoney() + reward);
+
             EasterEggHistory easterEggHistory = EasterEggHistory.builder()
                     .account(account)
                     .easterEgg(easterEgg)
@@ -156,7 +166,9 @@ public class CommandServiceImpl implements CommandService {
                     .build();
             easterEggHistoryRepository.save(easterEggHistory);
 
-            message.replyEmbeds(EmbedMessageHelper.getEmbedBuilder(EmbedSentence.EASTER_EGG_FIND, Color.CYAN).build()).queue();
+            EmbedDto dto = new EmbedDto(EmbedSentence.EASTER_EGG_FIND, Color.CYAN);
+            dto.changeMessage(NumberManager.getNumber(reward));
+            EmbedMessageHelper.replyEmbedMessage(message, dto);
         }
     }
 }
