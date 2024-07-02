@@ -28,7 +28,20 @@ public class Inventory {
     @Builder.Default
     private List<Item> items = new ArrayList<>();
 
-    void removeItem(Item item) {
+    public Item findItem(ItemInfo itemInfo) {
+        for (Item item : items)
+            if (item.getItemInfo().getIdx().equals(itemInfo.getIdx()))
+                return item;
+        return null;
+    }
+
+    public void addItem(Item item) {
+        if (items.contains(item))
+            return;
+        items.add(item);
+    }
+
+    public void removeItem(Item item) {
         if (!items.contains(item))
             return;
         items.remove(item);

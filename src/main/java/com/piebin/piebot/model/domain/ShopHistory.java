@@ -25,6 +25,8 @@ public class ShopHistory {
     @ManyToOne
     private ItemInfo itemInfo;
 
+    private Long amount;
+
     @CreatedDate
     @Column(name = "reg_date")
     private LocalDateTime regDate;
