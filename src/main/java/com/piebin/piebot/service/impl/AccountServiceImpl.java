@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -24,9 +25,12 @@ public class AccountServiceImpl implements AccountService {
     public void register(TextChannel channel, Member member) {
         if (existsUser(member.getId()))
             throw new AccountException(AccountErrorCode.NOT_FOUND);
+        String nickName = member.getNickname();
+        if (ObjectUtils.isEmpty(nickName))
+            nickName = member.getEffectiveName();
         Account account = Account.builder()
                 .id(member.getId())
-                .name(member.getNickname())
+                .name(nickName)
                 .build();
         accountRepository.save(account);
 
