@@ -7,7 +7,10 @@ import java.util.List;
 
 public class CommandManager {
     public static List<String> getArgs(MessageReceivedEvent event) {
-        return Arrays.asList(event.getMessage().getContentRaw().split(" "));
+        // Remove Consecutive Spaces
+        String message = event.getMessage().getContentRaw()
+                .replaceAll("\\s+", " ");
+        return Arrays.asList(message.split(" "));
     }
 
     public static String getMentionId(String arg) {
