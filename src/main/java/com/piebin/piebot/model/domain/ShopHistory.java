@@ -26,5 +26,6 @@ public class ShopHistory {
     private ItemInfo itemInfo;
 
     @CreatedDate
+    @Column(name = "reg_date")
     private LocalDateTime regDate;
 }

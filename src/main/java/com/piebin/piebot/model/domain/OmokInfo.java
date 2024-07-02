@@ -31,5 +31,6 @@ public class OmokInfo {
     private String position;
 
     @CreatedDate
+    @Column(name = "reg_date")
     private LocalDateTime regDate;
 }

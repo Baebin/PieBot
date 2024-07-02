@@ -26,5 +26,6 @@ public class Item {
     private Long count = 0L;
 
     @CreatedDate
+    @Column(name = "reg_date")
     private LocalDateTime regDate;
 }

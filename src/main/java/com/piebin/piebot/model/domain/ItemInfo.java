@@ -29,5 +29,6 @@ public class ItemInfo {
     private Long maxStackCount = 1L;
 
     @CreatedDate
+    @Column(name = "reg_date")
     private LocalDateTime regDate;
 }

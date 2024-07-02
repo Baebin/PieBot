@@ -35,5 +35,6 @@ public class Inventory {
     }
 
     @CreatedDate
+    @Column(name = "reg_date")
     private LocalDateTime regDate;
 }
