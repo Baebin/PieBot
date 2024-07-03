@@ -50,6 +50,8 @@ public class CommandServiceImpl implements CommandService {
     private final EasterEggCommand easterEggCommand;
     private final EasterEggListCommand easterEggListCommand;
 
+    private final TestCommand testCommand;
+
     private boolean checkArg(String arg, CommandParameter commandParameter) {
         for (String data : commandParameter.getData()) {
             if (
@@ -77,7 +79,7 @@ public class CommandServiceImpl implements CommandService {
                 try {
                     char x = args.get(1).toUpperCase().charAt(0);
                     int y = Integer.parseInt(args.get(1).substring(1, args.get(1).length()));
-                    if (('A' <= x && x <= 'A' + 13) && (1 <= y && y <= 14)) {
+                    if (('A' <= x && x <= 'A' + (OmokCommand.MAXIMUM_SIZE - 1)) && (1 <= y && y <= OmokCommand.MAXIMUM_SIZE)) {
                         Optional<Account> optionalAccount = accountRepository.findById(user.getId());
                         if (optionalAccount.isEmpty())
                             return;
@@ -132,6 +134,8 @@ public class CommandServiceImpl implements CommandService {
                     easterEggCommand.execute(event);
                 else if (parameter == CommandParameter.SECRET_EASTEREGG_LIST)
                     easterEggListCommand.execute(event);
+                else if (parameter == CommandParameter.SECRET_TEST)
+                    testCommand.execute(event);
                 else parameter.getCommand().execute(event);
                 break;
             }

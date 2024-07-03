@@ -10,6 +10,7 @@ import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.model.repository.OmokInfoRepository;
 import com.piebin.piebot.model.repository.OmokRepository;
 import com.piebin.piebot.model.repository.OmokRoomRepository;
+import com.piebin.piebot.service.OmokSkinService;
 import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.service.OmokService;
 import com.piebin.piebot.utility.*;
@@ -30,11 +31,17 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class OmokCommand implements PieCommand, OmokService {
+    public static final int DEFAULT_SIZE = 14;
+    public static final int MAXIMUM_SIZE = 21;
+    public static final int SKIN_AURORA_SIZE = 21;
+
     private final AccountRepository accountRepository;
 
     private final OmokRepository omokRepository;
     private final OmokRoomRepository omokRoomRepository;
     private final OmokInfoRepository omokInfoRepository;
+
+    private final OmokSkinService omokSkinService;
 
     private final OmokRankCommand omokRankCommand;
 
@@ -154,7 +161,11 @@ public class OmokCommand implements PieCommand, OmokService {
                 }
                 OmokRoom omokRoom = optionalOmokRoom.get();
                 String board = createBoard(omokRoom);
-                Message boardMessage = event.getChannel().sendMessage(board).complete();
+                Message boardMessage;
+                if (omokRoom.getOmokSkin() != null) {
+                    FileUpload fileUpload = FileUpload.fromData(omokSkinService.getBoard(omokRoom));
+                    boardMessage = event.getChannel().sendMessage(board).setFiles(fileUpload).complete();
+                } else boardMessage = event.getChannel().sendMessage(board).complete();
                 omokRoom.setMessageId(boardMessage.getId());
                 return;
             }
@@ -170,33 +181,31 @@ public class OmokCommand implements PieCommand, OmokService {
                 "## " + MessageManager.getMention(omokRoom.getAccount().getId())
                 + " vs " + MessageManager.getMention(omokRoom.getOpponent().getId())
         );
-
-        lines.add("┍┭┭┭┭┭┭┭┭┭┭┭┭┑ " + EmojiManager.getUniCircle(1));
-        for (int i = 2; i <= 13; i++)
-            lines.add("┝┿┿┿┿┿┿┿┿┿┿┿┿┥ " + EmojiManager.getUniCircle(i));
-        lines.add("┕┷┷┷┷┷┷┷┷┷┷┷┷┙ " + EmojiManager.getUniCircle(14));
-
-        for (int y = 1; y <= 14; y++) {
-            StringBuilder builder = new StringBuilder(lines.get(y));
-            for (char x = 'A'; x <= 'A' + 13; x++) {
-                Optional<OmokInfo> optionalOmokInfo = omokInfoRepository.findByRoomAndPosition(omokRoom, "" + x + y);
-                if (optionalOmokInfo.isEmpty())
-                    continue;
-                OmokInfo omokInfo = optionalOmokInfo.get();
-                if (omokInfo.getState() == OmokState.BLACK)
-                    builder.setCharAt((x - 'A'), '○');
-                else builder.setCharAt((x - 'A'), '●');
+        if (omokRoom.getOmokSkin() == null) {
+            lines.add("┍┭┭┭┭┭┭┭┭┭┭┭┭┑ " + EmojiManager.getUniCircle(1));
+            for (int i = 2; i <= (DEFAULT_SIZE - 1); i++)
+                lines.add("┝┿┿┿┿┿┿┿┿┿┿┿┿┥ " + EmojiManager.getUniCircle(i));
+            lines.add("┕┷┷┷┷┷┷┷┷┷┷┷┷┙ " + EmojiManager.getUniCircle(DEFAULT_SIZE));
+            for (int y = 1; y <= DEFAULT_SIZE; y++) {
+                StringBuilder builder = new StringBuilder(lines.get(y));
+                for (char x = 'A'; x <= 'A' + (DEFAULT_SIZE - 1); x++) {
+                    Optional<OmokInfo> optionalOmokInfo = omokInfoRepository.findByRoomAndPosition(omokRoom, "" + x + y);
+                    if (optionalOmokInfo.isEmpty())
+                        continue;
+                    OmokInfo omokInfo = optionalOmokInfo.get();
+                    if (omokInfo.getState() == OmokState.BLACK)
+                        builder.setCharAt((x - 'A'), '○');
+                    else builder.setCharAt((x - 'A'), '●');
+                }
+                lines.set(y, builder.toString());
             }
-            lines.set(y, builder.toString());
+            char x = 'a';
+            String bottom = "";
+            for (int i = 1; i <= DEFAULT_SIZE; i++)
+                bottom += EmojiManager.getUniAlphabet((x++));
+            lines.add(bottom);
+            lines.add("");
         }
-
-        char x = 'a';
-        String bottom = "";
-        for (int i = 1; i <= 14; i++)
-            bottom += EmojiManager.getUniAlphabet((x++));
-        lines.add(bottom);
-
-        lines.add("");
         OmokState state = omokRoom.getState();
         if (state == OmokState.BLACK)
             lines.add("> 현재 차례: " + MessageManager.getMention(omokRoom.getAccount().getId()));
@@ -265,13 +274,14 @@ public class OmokCommand implements PieCommand, OmokService {
         int[] dx = { -1, 1, 0, 0, -1, 1, 1, -1  };
         int[] dy = { 0, 0, -1, 1, -1, 1, -1, 1 };
 
+        int size = (omokRoom.getOmokSkin() != null ? SKIN_AURORA_SIZE : DEFAULT_SIZE);
         for (int d = 0; d < 8; d++) {
             char X = x;
             int Y = y;
             while (true) {
                 X += dx[d];
                 Y += dy[d];
-                if (!(('A' <= X && X <= 'A' + 13) && (1 <= Y && Y <= 14)))
+                if (!(('A' <= X && X <= 'A' + (size - 1)) && (1 <= Y && Y <= size)))
                     break;
                 Optional<OmokInfo> optional = omokInfoRepository.findByRoomAndPosition(omokRoom, "" + X + Y);
                 if (optional.isEmpty())
@@ -294,6 +304,10 @@ public class OmokCommand implements PieCommand, OmokService {
         if (optionalOmokRoom.isEmpty())
             return;
         OmokRoom omokRoom = optionalOmokRoom.get();
+
+        // Board Validation
+        if (omokRoom.getOmokSkin() == null && (x > ('A' + (DEFAULT_SIZE - 1)) || y > DEFAULT_SIZE))
+            return;
 
         Message message;
         TextChannel channel = event.getChannel().asTextChannel();
@@ -321,7 +335,12 @@ public class OmokCommand implements PieCommand, OmokService {
                 .build();
         omokInfoRepository.save(omokInfo);
         omokRoom.setState((isBlack ? OmokState.WHITE : OmokState.BLACK));
-        message.editMessage(createBoard(omokRoom)).queue();
+
+        if (omokRoom.getOmokSkin() != null) {
+            omokSkinService.updateBoard(omokRoom, state, x, y);
+            FileUpload fileUpload = FileUpload.fromData(omokSkinService.getBoard(omokRoom));
+            message.editMessage(createBoard(omokRoom)).setFiles(fileUpload).queue();
+        } else message.editMessage(createBoard(omokRoom)).queue();
 
         if (!isWin(omokRoom, state, x, y))
             return;

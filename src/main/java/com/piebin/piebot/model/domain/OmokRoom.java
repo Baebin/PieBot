@@ -1,5 +1,6 @@
 package com.piebin.piebot.model.domain;
 
+import com.piebin.piebot.model.entity.OmokSkin;
 import com.piebin.piebot.model.entity.OmokState;
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,4 +29,8 @@ public class OmokRoom {
     private OmokState state = OmokState.BLACK;
 
     private String messageId;
+
+    @Enumerated(value = EnumType.STRING)
+    @Column(name = "omok_skin")
+    private OmokSkin omokSkin;
 }

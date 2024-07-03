@@ -42,7 +42,7 @@ public enum CommandParameter {
     SECRET_FOOD(new SecretFoodCommand(), new String[] { "answer", "정답" }, "Secret", "시크릿 명령어입니다.", CommandMode.CONTAIN),
 
     // Test
-    SECRET_TEST(new TestCommand(), new String[] { "test", "테스트" }, "Secret", "테스트용 명령어입니다.", CommandMode.CONTAIN)
+    SECRET_TEST(null, new String[] { "test", "테스트" }, "Secret", "테스트용 명령어입니다.", CommandMode.CONTAIN)
 
     ;
 

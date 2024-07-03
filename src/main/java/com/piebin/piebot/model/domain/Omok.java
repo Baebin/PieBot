@@ -1,5 +1,6 @@
 package com.piebin.piebot.model.domain;
 
+import com.piebin.piebot.model.entity.OmokSkin;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,4 +26,8 @@ public class Omok {
 
     @Builder.Default
     private Long lose = 0L;
+
+    @Enumerated(value = EnumType.STRING)
+    @Column(name = "omok_skin")
+    private OmokSkin omokSkin;
 }

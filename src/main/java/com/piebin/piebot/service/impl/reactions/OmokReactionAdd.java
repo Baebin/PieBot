@@ -1,11 +1,14 @@
 package com.piebin.piebot.service.impl.reactions;
 
 import com.piebin.piebot.model.domain.Account;
+import com.piebin.piebot.model.domain.Omok;
 import com.piebin.piebot.model.domain.OmokRoom;
 import com.piebin.piebot.model.entity.CommandSentence;
 import com.piebin.piebot.model.entity.EmbedSentence;
 import com.piebin.piebot.model.repository.AccountRepository;
+import com.piebin.piebot.model.repository.OmokRepository;
 import com.piebin.piebot.model.repository.OmokRoomRepository;
+import com.piebin.piebot.service.OmokSkinService;
 import com.piebin.piebot.service.PieReactionAdd;
 import com.piebin.piebot.service.impl.commands.OmokCommand;
 import com.piebin.piebot.utility.EmbedMessageHelper;
@@ -16,6 +19,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
+import net.dv8tion.jda.api.utils.FileUpload;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,9 +30,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OmokReactionAdd implements PieReactionAdd {
     private final AccountRepository accountRepository;
+    private final OmokRepository omokRepository;
     private final OmokRoomRepository omokRoomRepository;
 
     private final OmokCommand omokCommand;
+
+    private final OmokSkinService omokSkinService;
 
     @Override
     @Transactional
@@ -69,14 +76,20 @@ public class OmokReactionAdd implements PieReactionAdd {
         MessageEmbed embed = EmbedMessageHelper.getEmbedBuilder(EmbedSentence.OMOK_PVP_STARTED, Color.GREEN).build();
         message.editMessageEmbeds(embed).queue();
 
+        Optional<Omok> optionalOmokFrom = omokRepository.findByAccount(from);
         OmokRoom omokRoom = OmokRoom.builder()
                 .account(from)
                 .opponent(to)
+                .omokSkin((optionalOmokFrom.isPresent() ? optionalOmokFrom.get().getOmokSkin() : null))
                 .build();
         omokRoomRepository.save(omokRoom);
 
         String board = omokCommand.createBoard(omokRoom);
-        Message boardMessage = event.getChannel().sendMessage(board).complete();
+        Message boardMessage;
+        if (omokRoom.getOmokSkin() != null) {
+            FileUpload fileUpload = FileUpload.fromData(omokSkinService.getBoard(omokRoom));
+            boardMessage = event.getChannel().sendMessage(board).setFiles(fileUpload).complete();
+        } else boardMessage = event.getChannel().sendMessage(board).complete();
         omokRoom.setMessageId(boardMessage.getId());
     }
 }
