@@ -18,13 +18,17 @@ public enum Sentence {
     HELP_1("명령어 목록 - 기본"),
     HELP_2("명령어 목록 - 오락"),
     HELP_3("명령어 목록 - 화폐"),
-    HELP_4("명령어 목록 - 기타"),
+    HELP_4("명령어 목록 - 아이템"),
+    HELP_5("명령어 목록 - 기타"),
 
     OMOK("오목"),
     OMOK_RANK("오목 순위"),
 
     GAMBLING_MUKCHIBA("묵찌빠 게임"),
     GAMBLING_SLOTMACHINE("슬롯머신 게임"),
+
+    SHOP("아이템 상점"),
+    SHOP_DEFAULT("아이템 상점 - 일반"),
 
     MONEY_RANK("자산 순위"),
     PATCH_NOTE("패치 노트"),

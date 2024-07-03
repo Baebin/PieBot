@@ -20,7 +20,7 @@ import java.util.List;
 
 @Service
 public class HelpCommand implements PieCommand, PageService {
-    public static int PAGES = 4;
+    public static int PAGES = 5;
 
     private void addField(EmbedBuilder embedBuilder, CommandParameter parameter) {
         String command = CommandServiceImpl.PREFIX + " " + Arrays.toString(parameter.getData());
@@ -63,6 +63,14 @@ public class HelpCommand implements PieCommand, PageService {
                 break;
             case 4:
                 embedBuilder.setTitle(Sentence.HELP_4.getMessage());
+                addField(embedBuilder, CommandParameter.INVENTORY_LIST);
+                embedBuilder.addBlankField(false);
+                addField(embedBuilder, CommandParameter.SHOP_LIST);
+                addField(embedBuilder, CommandParameter.SHOP_INFO);
+                addField(embedBuilder, CommandParameter.SHOP_BUY);
+                break;
+            case 5:
+                embedBuilder.setTitle(Sentence.HELP_5.getMessage());
                 addField(embedBuilder, CommandParameter.SECRET_EASTEREGG);
                 addField(embedBuilder, CommandParameter.SECRET_EASTEREGG_LIST);
                 break;

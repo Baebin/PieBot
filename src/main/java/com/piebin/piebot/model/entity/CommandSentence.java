@@ -34,6 +34,10 @@ public enum CommandSentence {
     GAMBLING_SLOTMACHINE_ARG2_MIN("슬롯머신 게임", "최소 금액은 1빙입니다.", "보유 자산: {A}빙"),
     GAMBLING_SLOTMACHINE_ARG2_LESS("슬롯머신 게임", "잔여 금액이 부족합니다.", "보유 자산: {A}빙"),
 
+    // Shop
+    SHOP_ARG1("아이템 상점", "[목록/정보/구매]", "올바르지 않은 명령어입니다."),
+    SHOP_ARG2_IDX_NOT_FOUND("아이템 상점", "상품이 존재하지 않습니다.", "올바른 상품 번호를 입력해주세요."),
+
     REWARD_WAITING("리워드", "잠시 후에 시도해주세요.", "{A}분에 한 번만 가능합니다."),
     REWARD_COMPLETED("리워드", "{A}빙이 지급되었습니다.", "보유 자산: {A}빙"),
 
