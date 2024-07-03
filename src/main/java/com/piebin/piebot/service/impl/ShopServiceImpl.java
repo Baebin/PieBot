@@ -73,7 +73,7 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    @Transactional
+    @Transactional(noRollbackFor = ShopException.class)
     public void buyItem(Account account, ShopItemDto dto) {
         Shop shop = shopRepository.findByIdx(dto.getIdx())
                 .orElseThrow(() -> new ShopException(ShopErrorCode.NOT_FOUND));

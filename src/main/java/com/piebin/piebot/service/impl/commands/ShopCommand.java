@@ -1,11 +1,18 @@
 package com.piebin.piebot.service.impl.commands;
 
+import com.piebin.piebot.exception.AccountException;
 import com.piebin.piebot.exception.ShopException;
+import com.piebin.piebot.exception.entity.AccountErrorCode;
 import com.piebin.piebot.exception.entity.ShopErrorCode;
+import com.piebin.piebot.model.domain.Account;
 import com.piebin.piebot.model.domain.Shop;
+import com.piebin.piebot.model.dto.embed.EmbedDto;
+import com.piebin.piebot.model.dto.shop.ShopItemDto;
 import com.piebin.piebot.model.entity.CommandSentence;
+import com.piebin.piebot.model.entity.EmbedSentence;
 import com.piebin.piebot.model.entity.ItemCategory;
 import com.piebin.piebot.model.entity.Sentence;
+import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.model.repository.ShopRepository;
 import com.piebin.piebot.service.PageService;
 import com.piebin.piebot.service.PieCommand;
@@ -22,11 +29,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class ShopCommand implements PieCommand, PageService {
     public static int PAGES = 1;
+
+    private final AccountRepository accountRepository;
 
     private final ShopService shopService;
     private final ShopRepository shopRepository;
@@ -97,7 +107,67 @@ public class ShopCommand implements PieCommand, PageService {
                     event.getMessage().replyEmbeds(embedBuilder.build()).queue();
                     return;
                 } catch (Exception e) {}
-                EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_ARG2_IDX_NOT_FOUND);
+                EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_IDX_NOT_FOUND);
+                return;
+            } else if (args.get(2).equals("구매") || args.get(2).equalsIgnoreCase("buy")) {
+                try {
+                    long idx = Long.parseLong(args.get(3));
+                    long amount;
+                    try {
+                        amount = Long.parseLong(args.get(4));
+                    } catch (Exception e) {
+                        amount = 1;
+                    }
+                    if (amount < 1) {
+                        EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_AMOUNT_INVALID);
+                        return;
+                    }
+                    Account account = accountRepository.findById(event.getAuthor().getId())
+                            .orElseThrow(() -> new AccountException(AccountErrorCode.NOT_FOUND));
+                    ShopItemDto shopItemDto = ShopItemDto.builder()
+                            .idx(idx)
+                            .amount(amount)
+                            .build();
+                    shopService.buyItem(account, shopItemDto);
+                    EmbedMessageHelper.replyCommandMessage(event.getMessage(), CommandSentence.SHOP_BUY_COMPLETED, Color.GREEN);
+                    return;
+                } catch (ShopException e) {
+                    switch (e.getErrorCode()) {
+                        case NOT_FOUND:
+                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_IDX_NOT_FOUND);
+                            break;
+                        case INVENTORY_NOT_FOUND:
+                            EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.INVENTORY_NOT_FOUND, Color.RED);
+                            break;
+                        case MAX_STACK_COUNT_LIMIT:
+                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_MAX_STACK_COUNT_LIMIT);
+                            break;
+                        case DAY_COUNT_LIMIT:
+                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_DAY_COUNT_LIMIT);
+                            break;
+                        case WEEK_COUNT_LIMIT:
+                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_WEEK_COUNT_LIMIT);
+                            break;
+                        case MONTH_COUNT_LIMIT:
+                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_MONTH_COUNT_LIMIT);
+                            break;
+                        case TOTAL_COUNT_LIMIT:
+                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_TOTAL_COUNT_LIMIT);
+                            break;
+                        case MONEY_LESS:
+                            Optional<Account> optionalAccount = accountRepository.findById(event.getAuthor().getId());
+                            if (optionalAccount.isPresent()) {
+                                Account account = optionalAccount.get();
+
+                                EmbedDto dto = new EmbedDto(CommandSentence.SHOP_MONEY_LESS, Color.RED);
+                                dto.changeDescription(NumberManager.getNumber(account.getMoney()));
+                                EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+                            } else EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.PROFILE_NOT_FOUND, Color.RED);
+                            break;
+                    }
+                } catch (Exception e) {
+                    EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_IDX_NOT_FOUND);
+                }
                 return;
             }
         }
