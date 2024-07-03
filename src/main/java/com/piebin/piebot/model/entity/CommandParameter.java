@@ -29,7 +29,7 @@ public enum CommandParameter {
     GAMBLING_MUKCHIBA(null, new String[] { "gambling", "도박" }, "[묵찌빠] [금액]", "묵찌빠 게임을 시작합니다.", CommandMode.EQUAL),
     GAMBLING_SLOTMACHINE(null, new String[] { "gambling", "도박" }, "[슬롯머신] [금액]", "슬롯머신 게임을 시작합니다.", CommandMode.EQUAL),
 
-    INVENTORY_LIST(null, new String[] { "inventory", "인벤토리" }, "[페이지]", "보유중인 아이템 목록을 보여줍니다.", CommandMode.EQUAL),
+    INVENTORY(null, new String[] { "inventory", "인벤토리" }, null, "보유중인 아이템 목록을 보여줍니다.", CommandMode.EQUAL),
 
     SHOP_LIST(null, new String[] { "shop", "상점" }, "[list/목록] [페이지]", "판매중인 상품 목록을 보여줍니다.", CommandMode.EQUAL),
     SHOP_INFO(null, new String[] { "shop", "상점" }, "[info/정보] [번호]", "상품의 정보를 보여줍니다.", CommandMode.EQUAL),

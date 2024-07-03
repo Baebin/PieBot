@@ -7,4 +7,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum AccountErrorCode {
     NOT_FOUND,
+    INVENTORY_NOT_FOUND,
 }
