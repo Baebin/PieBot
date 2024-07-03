@@ -78,7 +78,7 @@ public class CommandServiceImpl implements CommandService {
             if (args.get(1).length() == 2 || args.get(1).length() == 3) {
                 try {
                     char x = args.get(1).toUpperCase().charAt(0);
-                    int y = Integer.parseInt(args.get(1).substring(1, args.get(1).length()));
+                    int y = Integer.parseInt(args.get(1).substring(1));
                     if (('A' <= x && x <= 'A' + (OmokCommand.MAXIMUM_SIZE - 1)) && (1 <= y && y <= OmokCommand.MAXIMUM_SIZE)) {
                         Optional<Account> optionalAccount = accountRepository.findById(user.getId());
                         if (optionalAccount.isEmpty())
