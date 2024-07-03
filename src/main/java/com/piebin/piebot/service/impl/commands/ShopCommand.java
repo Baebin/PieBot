@@ -34,7 +34,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ShopCommand implements PieCommand, PageService {
-    public static int PAGES = 1;
+    public static int PAGES = 3;
 
     private final AccountRepository accountRepository;
 
@@ -181,19 +181,31 @@ public class ShopCommand implements PieCommand, PageService {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setColor(Color.GREEN);
 
+        List<Shop> shops;
         switch (page) {
             case 1:
                 embedBuilder.setTitle(Sentence.SHOP_DEFAULT.getMessage());
-                List<Shop> shops = shopRepository.findAllByItemCategory(ItemCategory.DEFAULT);
-                shops.sort((a, b) -> {
-                    if (a.getPrice().equals(b.getPrice()))
-                        return 0;
-                    return (a.getPrice() < b.getPrice() ? -1 : 1);
-                });
-                for (Shop shop : shops)
-                    addField(embedBuilder, shop);
+                shops = shopRepository.findAllByItemCategory(ItemCategory.DEFAULT);
+                break;
+            case 2:
+                embedBuilder.setTitle(Sentence.SHOP_GAME.getMessage());
+                shops = shopRepository.findAllByItemCategory(ItemCategory.GAME);
+                break;
+            case 3:
+                embedBuilder.setTitle(Sentence.SHOP_ETC.getMessage());
+                shops = shopRepository.findAllByItemCategory(ItemCategory.ETC);
+                break;
+            default:
+                shops = new ArrayList<>();
                 break;
         }
+        shops.sort((a, b) -> {
+            if (a.getPrice().equals(b.getPrice()))
+                return 0;
+            return (a.getPrice() < b.getPrice() ? -1 : 1);
+        });
+        for (Shop shop : shops)
+            addField(embedBuilder, shop);
         return embedBuilder;
     }
 }

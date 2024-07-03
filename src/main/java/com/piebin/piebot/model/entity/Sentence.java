@@ -31,6 +31,8 @@ public enum Sentence {
 
     SHOP("아이템 상점"),
     SHOP_DEFAULT("아이템 상점 - 일반"),
+    SHOP_GAME("아이템 상점 - 게임"),
+    SHOP_ETC("아이템 상점 - 기타"),
 
     MONEY_RANK("자산 순위"),
     PATCH_NOTE("패치 노트"),

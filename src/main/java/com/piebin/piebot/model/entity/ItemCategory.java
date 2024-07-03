@@ -1,5 +1,5 @@
 package com.piebin.piebot.model.entity;
 
 public enum ItemCategory {
-    DEFAULT, ETC
+    DEFAULT, GAME, ETC
 }
