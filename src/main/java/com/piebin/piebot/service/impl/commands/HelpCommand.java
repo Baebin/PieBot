@@ -49,6 +49,7 @@ public class HelpCommand implements PieCommand, PageService {
                 addField(embedBuilder, CommandParameter.OMOK_QUIT);
                 addField(embedBuilder, CommandParameter.OMOK_PROFILE);
                 addField(embedBuilder, CommandParameter.OMOK_CONTINUE);
+                addField(embedBuilder, CommandParameter.OMOK_SKIN);
                 embedBuilder.addBlankField(false);
                 addField(embedBuilder, CommandParameter.GAMBLING_MUKCHIBA);
                 addField(embedBuilder, CommandParameter.GAMBLING_SLOTMACHINE);

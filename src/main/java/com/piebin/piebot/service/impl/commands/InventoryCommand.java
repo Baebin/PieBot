@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -47,12 +48,14 @@ public class InventoryCommand implements PieCommand {
             embedBuilder.setColor(Color.GREEN);
 
             int i = 0;
+            List<String> lines = new ArrayList<>();
             for (Item item : items) {
                 String description = (++i) + ". "
                         + item.getItemInfo().getName()
                         + " (x" + item.getCount() + ")";
-                embedBuilder.appendDescription(description);
+                lines.add(description);
             }
+            embedBuilder.appendDescription(String.join("\n", lines));
             event.getMessage().replyEmbeds(embedBuilder.build()).queue();
         } catch (AccountException e) {
             switch (e.getErrorCode()) {

@@ -1,5 +1,6 @@
 package com.piebin.piebot.model.domain;
 
+import com.piebin.piebot.model.entity.OmokSkin;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -46,6 +47,16 @@ public class Inventory {
             return;
         items.remove(item);
     }
+
+    public boolean hasOmokSkin(OmokSkin omokSkin) {
+        for (Item item : items) {
+            String name = item.getItemInfo().getName();
+            if (name.contains("오목") && name.contains(omokSkin.name()))
+                return true;
+        }
+        return false;
+    }
+
 
     @CreatedDate
     @Column(name = "reg_date")

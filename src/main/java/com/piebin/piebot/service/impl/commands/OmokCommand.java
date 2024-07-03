@@ -1,15 +1,9 @@
 package com.piebin.piebot.service.impl.commands;
 
-import com.piebin.piebot.model.domain.Account;
-import com.piebin.piebot.model.domain.Omok;
-import com.piebin.piebot.model.domain.OmokInfo;
-import com.piebin.piebot.model.domain.OmokRoom;
+import com.piebin.piebot.model.domain.*;
 import com.piebin.piebot.model.dto.embed.EmbedDto;
 import com.piebin.piebot.model.entity.*;
-import com.piebin.piebot.model.repository.AccountRepository;
-import com.piebin.piebot.model.repository.OmokInfoRepository;
-import com.piebin.piebot.model.repository.OmokRepository;
-import com.piebin.piebot.model.repository.OmokRoomRepository;
+import com.piebin.piebot.model.repository.*;
 import com.piebin.piebot.service.OmokSkinService;
 import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.service.OmokService;
@@ -36,6 +30,7 @@ public class OmokCommand implements PieCommand, OmokService {
     public static final int SKIN_AURORA_SIZE = 21;
 
     private final AccountRepository accountRepository;
+    private final InventoryRepository inventoryRepository;
 
     private final OmokRepository omokRepository;
     private final OmokRoomRepository omokRoomRepository;
@@ -167,6 +162,62 @@ public class OmokCommand implements PieCommand, OmokService {
                     boardMessage = event.getChannel().sendMessage(board).setFiles(fileUpload).complete();
                 } else boardMessage = event.getChannel().sendMessage(board).complete();
                 omokRoom.setMessageId(boardMessage.getId());
+                return;
+            }
+            else if (args.get(2).equals("스킨") || args.get(2).equalsIgnoreCase("skin")) {
+                Optional<Account> optionalAccount = accountRepository.findById(event.getAuthor().getId());
+                if (optionalAccount.isEmpty()) {
+                    EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.PROFILE_NOT_FOUND, Color.RED);
+                    return;
+                }
+                Optional<Inventory> optionalInventory = inventoryRepository.findByAccount(optionalAccount.get());
+                if (optionalInventory.isEmpty()) {
+                    EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.INVENTORY_NOT_FOUND, Color.RED);
+                    return;
+                }
+                Account account = optionalAccount.get();
+                Optional<Omok> optionalOmok = omokRepository.findByAccount(account);
+                if (optionalOmok.isEmpty()) {
+                    EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_NOT_FOUND);
+                    return;
+                }
+                Omok omok = optionalOmok.get();
+                if (args.size() >= 4) {
+                    if (args.get(3).equals("해제")) {
+                        if (omok.getOmokSkin() == null) {
+                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_SKIN_ALREADY_REMOVED);
+                            return;
+                        }
+                        EmbedDto dto = new EmbedDto(CommandSentence.OMOK_SKIN_REMOVED, Color.GREEN);
+                        dto.changeDescription(omok.getOmokSkin().name());
+                        EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+
+                        omok.setOmokSkin(null);
+                        return;
+                    } else if (args.get(3).equalsIgnoreCase(OmokSkin.AURORA.name())) {
+                        Inventory inventory = optionalInventory.get();
+                        if (!inventory.hasOmokSkin(OmokSkin.AURORA)) {
+                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_SKIN_NONE);
+                            return;
+                        }
+                        EmbedDto dto = new EmbedDto(CommandSentence.OMOK_SKIN_SELECTED, Color.GREEN);
+                        dto.changeDescription(OmokSkin.AURORA.name());
+                        EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+
+                        omok.setOmokSkin(OmokSkin.AURORA);
+                        return;
+                    }
+                }
+                Inventory inventory = optionalInventory.get();
+                List<String> skins = new ArrayList<>();
+                if (inventory.hasOmokSkin(OmokSkin.AURORA))
+                    skins.add("AURORA");
+                EmbedDto dto = new EmbedDto(CommandSentence.OMOK_SKIN_INVALID, Color.RED);
+                dto.changeDescription(
+                        omok.getOmokSkin() == null ? "없음" : omok.getOmokSkin().name(),
+                        skins.isEmpty() ? "없음" : String.join(",", skins)
+                );
+                EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
                 return;
             }
         }

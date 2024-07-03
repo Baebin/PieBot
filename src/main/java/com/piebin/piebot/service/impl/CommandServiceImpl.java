@@ -117,7 +117,8 @@ public class CommandServiceImpl implements CommandService {
                 else if (parameter == CommandParameter.OMOK_PVP
                         || parameter == CommandParameter.OMOK_QUIT
                         || parameter == CommandParameter.OMOK_PROFILE
-                        || parameter == CommandParameter.OMOK_CONTINUE)
+                        || parameter == CommandParameter.OMOK_CONTINUE
+                        || parameter == CommandParameter.OMOK_SKIN)
                     omokCommand.execute(event);
                 else if (parameter == CommandParameter.GAMBLING_MUKCHIBA
                         || parameter == CommandParameter.GAMBLING_SLOTMACHINE)
