@@ -41,17 +41,24 @@ public class ShopCommand implements PieCommand, PageService {
     private final ShopService shopService;
     private final ShopRepository shopRepository;
 
-    private void addField(EmbedBuilder embedBuilder, Shop shop) {
+    List<String> getShopLines(Shop shop) {
         List<String> lines = new ArrayList<>();
         lines.add("- 가격: " + NumberManager.getNumber(shop.getPrice()) + "빙");
-        if (shop.getDay_count_limit() != null)
-            lines.add("- 하루 구매 제한: " + NumberManager.getNumber(shop.getDay_count_limit()) + "회");
-        if (shop.getWeek_count_limit() != null)
-            lines.add("- 주간 구매 제한: " + NumberManager.getNumber(shop.getWeek_count_limit()) + "회");
-        if (shop.getMonth_count_limit() != null)
-            lines.add("- 한달 구매 제한: " + NumberManager.getNumber(shop.getMonth_count_limit()) + "회");
-        if (shop.getTotal_count_limit() != null)
-            lines.add("- 계정 구매 제한: " + NumberManager.getNumber(shop.getTotal_count_limit()) + "회");
+        if (shop.getDayCountLImit() != null)
+            lines.add("- 하루 구매 제한: " + NumberManager.getNumber(shop.getDayCountLImit()) + "회");
+        if (shop.getWeekCountLimit() != null)
+            lines.add("- 주간 구매 제한: " + NumberManager.getNumber(shop.getWeekCountLimit()) + "회");
+        if (shop.getMonthCountLimit() != null)
+            lines.add("- 한달 구매 제한: " + NumberManager.getNumber(shop.getMonthCountLimit()) + "회");
+        if (shop.getAccountCountLimit() != null)
+            lines.add("- 계정 구매 제한: " + NumberManager.getNumber(shop.getAccountCountLimit()) + "회");
+        if (shop.getTotalCountLimit() != null)
+            lines.add("- 전체 구매 제한: " + NumberManager.getNumber(shop.getTotalCountLimit()) + "회");
+        return lines;
+    }
+
+    private void addField(EmbedBuilder embedBuilder, Shop shop) {
+        List<String> lines = getShopLines(shop);
         String description = String.join("\n", lines);
         embedBuilder.addField(shop.getIdx() + ". " + shop.getItemInfo().getName(), description, false);
     }
@@ -64,20 +71,11 @@ public class ShopCommand implements PieCommand, PageService {
         List<String> lines = new ArrayList<>();
         lines.add("- 판매 번호: " + NumberManager.getNumber(shop.getIdx()) + "번");
         lines.add("- 아이템 번호: " + NumberManager.getNumber(shop.getItemInfo().getIdx()) + "번");
-        String desIdx = String.join("\n", lines);
 
-        lines.clear();
-        lines.add("- 가격: " + NumberManager.getNumber(shop.getPrice()) + "빙");
-        if (shop.getDay_count_limit() != null)
-            lines.add("- 일별 구매 제한: " + NumberManager.getNumber(shop.getDay_count_limit()) + "회");
-        if (shop.getWeek_count_limit() != null)
-            lines.add("- 주별 구매 제한: " + NumberManager.getNumber(shop.getWeek_count_limit()) + "회");
-        if (shop.getMonth_count_limit() != null)
-            lines.add("- 월별 구매 제한: " + NumberManager.getNumber(shop.getMonth_count_limit()) + "회");
-        if (shop.getTotal_count_limit() != null)
-            lines.add("- 계정 구매 제한: " + NumberManager.getNumber(shop.getTotal_count_limit()) + "회");
-        String desShop = String.join("\n", lines);
+        String desIdx = String.join("\n", lines);
+        String desShop = String.join("\n", getShopLines(shop));
         String desItem = shop.getItemInfo().getDescription();
+
         embedBuilder.addField("고유 번호", desIdx, false);
         embedBuilder.addField("판매 정보", desShop, false);
         embedBuilder.addField("상품 정보", desItem, false);
@@ -150,6 +148,9 @@ public class ShopCommand implements PieCommand, PageService {
                             break;
                         case MONTH_COUNT_LIMIT:
                             EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_MONTH_COUNT_LIMIT);
+                            break;
+                        case ACCOUNT_COUNT_LIMIT:
+                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_ACCOUNT_COUNT_LIMIT);
                             break;
                         case TOTAL_COUNT_LIMIT:
                             EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_TOTAL_COUNT_LIMIT);

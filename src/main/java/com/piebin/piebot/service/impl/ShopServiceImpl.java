@@ -13,7 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Service
 @RequiredArgsConstructor
@@ -24,41 +25,51 @@ public class ShopServiceImpl implements ShopService {
     private final ShopHistoryRepository shopHistoryRepository;
 
     void validateDayCountLimit(Account account, Shop shop, long amount) {
-        Long countLimit = shop.getDay_count_limit();
+        Long countLimit = shop.getDayCountLImit();
         if (countLimit == null)
             return;
-        LocalDate localDate = LocalDate.now();
-        Long cnt = shopHistoryRepository.countByAccountAndItemInfoAndRegDateAfter(account, shop.getItemInfo(), localDate);
+        LocalDateTime localDateTimeMin = LocalDateTime.now().with(LocalTime.MIN);
+        Long cnt = shopHistoryRepository.countByAccountAndItemInfoAndRegDateAfter(account, shop.getItemInfo(), localDateTimeMin);
         if (cnt + amount > countLimit)
             throw new ShopException(ShopErrorCode.DAY_COUNT_LIMIT);
     }
 
     void validateWeekCountLimit(Account account, Shop shop, long amount) {
-        Long countLimit = shop.getWeek_count_limit();
+        Long countLimit = shop.getWeekCountLimit();
         if (countLimit == null)
             return;
-        LocalDate localDate = LocalDate.now();
-        localDate.minusDays(localDate.getDayOfWeek().getValue() - 1);
-        Long cnt = shopHistoryRepository.countByAccountAndItemInfoAndRegDateAfter(account, shop.getItemInfo(), localDate);
+        LocalDateTime localDateTimeMin = LocalDateTime.now().with(LocalTime.MIN);
+        LocalDateTime localDateTime = localDateTimeMin.minusDays(localDateTimeMin.getDayOfWeek().getValue() - 1);
+        Long cnt = shopHistoryRepository.countByAccountAndItemInfoAndRegDateAfter(account, shop.getItemInfo(), localDateTime);
         if (cnt + amount > countLimit)
-            throw new ShopException(ShopErrorCode.DAY_COUNT_LIMIT);
+            throw new ShopException(ShopErrorCode.WEEK_COUNT_LIMIT);
     }
 
     void validateMonthCountLimit(Account account, Shop shop, long amount) {
-        Long countLimit = shop.getMonth_count_limit();
+        Long countLimit = shop.getMonthCountLimit();
         if (countLimit == null)
             return;
-        LocalDate localDate = LocalDate.now().withDayOfMonth(1);
-        Long cnt = shopHistoryRepository.countByAccountAndItemInfoAndRegDateAfter(account, shop.getItemInfo(), localDate);
+        LocalDateTime localDateTimeMin = LocalDateTime.now().with(LocalTime.MIN);
+        LocalDateTime localDateTime = localDateTimeMin.withDayOfMonth(1);
+        Long cnt = shopHistoryRepository.countByAccountAndItemInfoAndRegDateAfter(account, shop.getItemInfo(), localDateTime);
         if (cnt + amount > countLimit)
             throw new ShopException(ShopErrorCode.MONTH_COUNT_LIMIT);
     }
 
-    void validateTotalCountLimit(Account account, Shop shop, long amount) {
-        Long countLimit = shop.getTotal_count_limit();
+    void validateAccountCountLimit(Account account, Shop shop, long amount) {
+        Long countLimit = shop.getAccountCountLimit();
         if (countLimit == null)
             return;
         Long cnt = shopHistoryRepository.countByAccountAndItemInfo(account, shop.getItemInfo());
+        if (cnt + amount > countLimit)
+            throw new ShopException(ShopErrorCode.ACCOUNT_COUNT_LIMIT);
+    }
+
+    void validateTotalCountLimit(Shop shop, long amount) {
+        Long countLimit = shop.getTotalCountLimit();
+        if (countLimit == null)
+            return;
+        Long cnt = shopHistoryRepository.countByItemInfo(shop.getItemInfo());
         if (cnt + amount > countLimit)
             throw new ShopException(ShopErrorCode.TOTAL_COUNT_LIMIT);
     }
@@ -78,7 +89,8 @@ public class ShopServiceImpl implements ShopService {
         Shop shop = shopRepository.findByIdx(dto.getIdx())
                 .orElseThrow(() -> new ShopException(ShopErrorCode.NOT_FOUND));
         // Count Validation
-        validateTotalCountLimit(account, shop, dto.getAmount());
+        validateTotalCountLimit(shop, dto.getAmount());
+        validateAccountCountLimit(account, shop, dto.getAmount());
         validateMonthCountLimit(account, shop, dto.getAmount());
         validateWeekCountLimit(account, shop, dto.getAmount());
         validateDayCountLimit(account, shop, dto.getAmount());

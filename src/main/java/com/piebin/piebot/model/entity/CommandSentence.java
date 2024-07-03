@@ -43,7 +43,8 @@ public enum CommandSentence {
     SHOP_DAY_COUNT_LIMIT("아이템 상점", "일별 구매 한도에 도달했습니다.", "올바른 구매 수량을 입력해주세요."),
     SHOP_WEEK_COUNT_LIMIT("아이템 상점", "주별 구매 한도에 도달했습니다.", "올바른 구매 수량을 입력해주세요."),
     SHOP_MONTH_COUNT_LIMIT("아이템 상점", "월별 구매 한도에 도달했습니다.", "올바른 구매 수량을 입력해주세요."),
-    SHOP_TOTAL_COUNT_LIMIT("아이템 상점", "계정 구매 한도에 도달했습니다.", "올바른 구매 수량을 입력해주세요."),
+    SHOP_ACCOUNT_COUNT_LIMIT("아이템 상점", "계정 구매 한도에 도달했습니다.", "올바른 구매 수량을 입력해주세요."),
+    SHOP_TOTAL_COUNT_LIMIT("아이템 상점", "서버 구매 한도에 도달했습니다.", "올바른 구매 수량을 입력해주세요."),
     SHOP_BUY_COMPLETED("아이템 상점", "아이템을 구매하였습니다.", "인벤토리를 확인해주세요."),
 
     REWARD_WAITING("리워드", "잠시 후에 시도해주세요.", "{A}분에 한 번만 가능합니다."),

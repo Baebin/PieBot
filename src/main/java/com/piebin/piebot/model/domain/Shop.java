@@ -27,16 +27,19 @@ public class Shop {
     private Long price = 0L;
 
     @Column(name = "day_count_limit")
-    private Long day_count_limit;
+    private Long dayCountLImit;
 
     @Column(name = "week_count_limit")
-    private Long week_count_limit;
+    private Long weekCountLimit;
 
     @Column(name = "month_count_limit")
-    private Long month_count_limit;
+    private Long monthCountLimit;
+
+    @Column(name = "account_count_limit")
+    private Long accountCountLimit;
 
     @Column(name = "total_count_limit")
-    private Long total_count_limit;
+    private Long totalCountLimit;
 
     @Column(name = "item_category")
     @Enumerated(value = EnumType.STRING)
