@@ -29,7 +29,7 @@ public class PageReactionAdd implements PieReactionAdd {
             return;
         int page = 1;
         try {
-            Integer.parseInt(embed.getTitle().replace(sentence + " - ", ""));
+            page = Integer.parseInt(embed.getTitle().replace(sentence + " - ", ""));
         } catch (Exception e) {}
 
         Emoji emoji = reaction.getEmoji();

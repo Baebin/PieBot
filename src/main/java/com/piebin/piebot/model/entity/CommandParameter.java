@@ -16,6 +16,7 @@ public enum CommandParameter {
     MONEY_RANK(new MoneyRankCommand(), new String[] { "money", "돈", "자산" }, "[페이지]", "유저들의 보유 자산 순위를 보여줍니다.", CommandMode.EQUAL),
     REWARD(null, new String[] { "reward", "리워드" }, null, "리워드를 지급받습니다.", CommandMode.EQUAL),
     ATTENDANCE(null, new String[] { "attendance", "출석", "출첵", "출석체크" }, null, "출석체크를 진행합니다.", CommandMode.EQUAL),
+    ATTENDANCE_RANK(null, new String[] { "attendances", "출석부" }, "[페이지]", "유저들의 출석 순위를 보여줍니다.", CommandMode.EQUAL),
 
     BABO(new BaboCommand(), new String[] { "babo", "바보" }, null, "바보를 출력합니다.", CommandMode.EQUAL),
     DICE(new DiceCommand(), new String[] { "dice", "주사위" }, "[2~100]", "주사위를 굴립니다.", CommandMode.EQUAL),

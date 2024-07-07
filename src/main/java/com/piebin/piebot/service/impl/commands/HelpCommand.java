@@ -61,6 +61,7 @@ public class HelpCommand implements PieCommand, PageService {
                 embedBuilder.addBlankField(false);
                 addField(embedBuilder, CommandParameter.REWARD);
                 addField(embedBuilder, CommandParameter.ATTENDANCE);
+                addField(embedBuilder, CommandParameter.ATTENDANCE_RANK);
                 break;
             case 4:
                 embedBuilder.setTitle(Sentence.HELP_4.getMessage());

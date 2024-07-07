@@ -35,6 +35,7 @@ public enum Sentence {
     SHOP_ETC("아이템 상점 - 기타"),
 
     MONEY_RANK("자산 순위"),
+    ATTENDANCE_RANK("출석부 순위"),
     PATCH_NOTE("패치 노트"),
     CONTRIBUTOR("기여자"),
 

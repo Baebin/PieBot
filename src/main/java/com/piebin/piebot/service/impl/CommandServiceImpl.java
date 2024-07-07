@@ -42,6 +42,7 @@ public class CommandServiceImpl implements CommandService {
     private final PayCommand payCommand;
     private final RewardCommand rewardCommand;
     private final AttendanceCommand attendanceCommand;
+    private final AttendanceRankCommand attendanceRankCommand;
     private final OmokCommand omokCommand;
     private final GamblingCommand gamblingCommand;
     private final InventoryCommand inventoryCommand;
@@ -114,6 +115,8 @@ public class CommandServiceImpl implements CommandService {
                     rewardCommand.execute(event);
                 else if (parameter == CommandParameter.ATTENDANCE)
                     attendanceCommand.execute(event);
+                else if (parameter == CommandParameter.ATTENDANCE_RANK)
+                    attendanceRankCommand.execute(event);
                 else if (parameter == CommandParameter.OMOK_PVP
                         || parameter == CommandParameter.OMOK_QUIT
                         || parameter == CommandParameter.OMOK_PROFILE

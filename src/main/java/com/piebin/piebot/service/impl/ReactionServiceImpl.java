@@ -31,6 +31,7 @@ public class ReactionServiceImpl implements ReactionService {
     private final HelpReactionAdd helpReactionAdd;
     private final PatchNoteReactionAdd patchNoteReactionAdd;
     private final MoneyRankReactionAdd moneyRankReactionAdd;
+    private final AttendanceRankReactionAdd attendanceRankReactionAdd;
     private final OmokReactionAdd omokReactionAdd;
     private final OmokRankReactionAdd omokRankReactionAdd;
     private final MukchibaReactionAdd mukchibaReactionAdd;
@@ -68,6 +69,10 @@ public class ReactionServiceImpl implements ReactionService {
         }
         if (title.startsWith(Sentence.MONEY_RANK.getMessage())) {
             moneyRankReactionAdd.execute(event);
+            return;
+        }
+        if (title.startsWith(Sentence.ATTENDANCE_RANK.getMessage())) {
+            attendanceRankReactionAdd.execute(event);
             return;
         }
         if (title.startsWith(Sentence.OMOK_RANK.getMessage())) {
