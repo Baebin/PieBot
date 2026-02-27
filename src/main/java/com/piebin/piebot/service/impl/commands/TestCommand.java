@@ -73,6 +73,8 @@ public class TestCommand implements PieCommand {
             message.replyFiles(fileUploadC).queue();
         } catch (IOException e) {
             e.printStackTrace();
+
+            log.info("user: {}, trace: {}", event.getAuthor(), e.getStackTrace());
         }
     }
 }
