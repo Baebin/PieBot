@@ -44,7 +44,7 @@ public class PayCommand implements PieCommand {
                         if (1 <= money) {
                             if (money <= from.getMoney()) {
                                 from.setMoney(from.getMoney() - money);
-                                money *= 0.9;
+                                if (money * 0.9 >= 1) money *= 0.9;
 
                                 to.setMoney(to.getMoney() + money);
 
