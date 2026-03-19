@@ -32,13 +32,15 @@ public enum CommandSentence {
     OMOK_NOT_FOUND("오목 스킨", "오목 프로필이 존재하지 않습니다.", "게임을 1회 이상 플레이해주세요."),
 
     // Gambling
-    GAMBLING_ARG1("도박", "[묵찌빠/슬롯머신]", "올바르지 않은 명령어입니다."),
-    GAMBLING_MUKCHIBA_ARG2_MIN("묵찌빠 게임", "최소 금액은 1빙입니다.", "보유 자산: {A}빙"),
-    GAMBLING_MUKCHIBA_ARG2_LESS("묵찌빠 게임", "잔여 금액이 부족합니다.", "보유 자산: {A}빙"),
-    GAMBLING_MUKCHIBA_ARG3("묵찌빠 게임", "[묵/찌/빠]", "올바르지 않은 명령어입니다."),
+    GAMBLING_ARG1("도박", "[묵찌빠/슬롯머신/경마]", "올바르지 않은 명령어입니다."),
+    GAMBLING_MUKCHIBA_MONEY_MIN("묵찌빠 게임", "최소 금액은 1빙입니다.", "보유 자산: {A}빙"),
+    GAMBLING_MUKCHIBA_MONEY_LESS("묵찌빠 게임", "잔여 금액이 부족합니다.", "보유 자산: {A}빙"),
     GAMBLING_MUKCHIBA_RUN("묵찌빠 게임", "배팅 금액: {A}빙", "이모지를 눌러주세요."),
-    GAMBLING_SLOTMACHINE_ARG2_MIN("슬롯머신 게임", "최소 금액은 1빙입니다.", "보유 자산: {A}빙"),
-    GAMBLING_SLOTMACHINE_ARG2_LESS("슬롯머신 게임", "잔여 금액이 부족합니다.", "보유 자산: {A}빙"),
+    GAMBLING_SLOTMACHINE_MONEY_MIN("슬롯머신 게임", "최소 금액은 1빙입니다.", "보유 자산: {A}빙"),
+    GAMBLING_SLOTMACHINE_MONEY_LESS("슬롯머신 게임", "잔여 금액이 부족합니다.", "보유 자산: {A}빙"),
+    GAMBLING_HORSE_RACING_MONEY_MIN("경마 게임", "최소 금액은 1빙입니다.", "보유 자산: {A}빙"),
+    GAMBLING_HORSE_RACING_MONEY_LESS("경마 게임", "잔여 금액이 부족합니다.", "보유 자산: {A}빙"),
+    GAMBLING_HORSE_RUN("경마 게임", "배팅 금액: {A}빙", "원하는 말 이모지를 눌러주세요."),
 
     // Shop
     SHOP_ARG1("아이템 상점", "[목록/정보/구매]", "올바르지 않은 명령어입니다."),

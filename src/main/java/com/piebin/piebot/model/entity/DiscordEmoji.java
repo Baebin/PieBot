@@ -6,6 +6,12 @@ import net.dv8tion.jda.api.entities.emoji.Emoji;
 
 @AllArgsConstructor
 public enum DiscordEmoji {
+    BINGGU("__", "1228037928127692882", false),
+    NO_TOUCH_SNAIL("__", "1229420830723674184", false),
+    DAZED_SNAIL("__", "1228022693241294898", false),
+    SITTING_FOX("__", "1231719493823234089", false),
+    DAZED_FOX("__", "1231719955293274202", false),
+
     FRUIT_APPLE("fruit_apple", "1244952446275555390", false),
     FRUIT_MANGO("fruit_mango", "1244952480522043403", false),
     FRUIT_PLUM("fruit_plum", "1244952507734560808", false),

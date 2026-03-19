@@ -34,6 +34,14 @@ public class EmbedMessageHelper {
         return embedBuilder;
     }
 
+    public static EmbedBuilder getEmbedBuilder(EmbedDto dto) {
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+        embedBuilder.setTitle(dto.getTitle());
+        embedBuilder.addField(dto.getMessage(), dto.getDescription(), false);
+        embedBuilder.setColor(dto.getColor());
+        return embedBuilder;
+    }
+
     /*
     Reply
     */

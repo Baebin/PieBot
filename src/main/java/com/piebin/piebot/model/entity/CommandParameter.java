@@ -30,6 +30,7 @@ public enum CommandParameter {
 
     GAMBLING_MUKCHIBA(null, new String[] { "gambling", "도박" }, "[묵찌빠] [금액]", "묵찌빠 게임을 시작합니다.", CommandMode.EQUAL),
     GAMBLING_SLOTMACHINE(null, new String[] { "gambling", "도박" }, "[슬롯머신] [금액]", "슬롯머신 게임을 시작합니다.", CommandMode.EQUAL),
+    GAMBLING_HORSE_RACING(null, new String[] { "gambling", "도박" }, "[경마] [금액]", "경마 게임을 시작합니다.", CommandMode.EQUAL),
 
     INVENTORY(null, new String[] { "inventory", "인벤토리" }, null, "보유중인 아이템 목록을 보여줍니다.", CommandMode.EQUAL),
 

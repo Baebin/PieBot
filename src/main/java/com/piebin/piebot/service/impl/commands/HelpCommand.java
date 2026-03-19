@@ -53,6 +53,7 @@ public class HelpCommand implements PieCommand, PageService {
                 embedBuilder.addBlankField(false);
                 addField(embedBuilder, CommandParameter.GAMBLING_MUKCHIBA);
                 addField(embedBuilder, CommandParameter.GAMBLING_SLOTMACHINE);
+                addField(embedBuilder, CommandParameter.GAMBLING_HORSE_RACING);
                 break;
             case 3:
                 embedBuilder.setTitle(Sentence.HELP_3.getMessage());

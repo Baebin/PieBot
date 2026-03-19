@@ -7,4 +7,6 @@ public interface GamblingService {
     void runMukchiba(MessageReceivedEvent event);
     void runMukchiba(MessageReactionAddEvent event);
     void runSlotMachine(MessageReceivedEvent event);
+    void runHorseRacing(MessageReceivedEvent event);
+    void runHorseRacing(MessageReactionAddEvent event);
 }

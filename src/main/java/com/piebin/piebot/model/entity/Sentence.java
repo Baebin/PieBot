@@ -26,6 +26,7 @@ public enum Sentence {
 
     GAMBLING_MUKCHIBA("묵찌빠 게임"),
     GAMBLING_SLOTMACHINE("슬롯머신 게임"),
+    GAMBLING_HORSE_RACING("경마 게임"),
 
     INVENTORY("인벤토리"),
 
