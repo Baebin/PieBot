@@ -34,6 +34,7 @@ public class ReactionServiceImpl implements ReactionService {
     private final AttendanceRankReactionAdd attendanceRankReactionAdd;
     private final OmokReactionAdd omokReactionAdd;
     private final OmokRankReactionAdd omokRankReactionAdd;
+    private final YachtReactionAdd yachtReactionAdd;
     private final MukchibaReactionAdd mukchibaReactionAdd;
     private final HorseRacingReactionAdd horseRacingReactionAdd;
     private final ShopReactionAdd shopReactionAdd;
@@ -82,6 +83,10 @@ public class ReactionServiceImpl implements ReactionService {
         }
         if (title.startsWith(Sentence.OMOK.getMessage())) {
             omokReactionAdd.execute(event);
+            return;
+        }
+        if (title.startsWith(Sentence.YACHT.getMessage())) {
+            yachtReactionAdd.execute(event);
             return;
         }
         if (title.startsWith(Sentence.GAMBLING_MUKCHIBA.getMessage())) {

@@ -44,6 +44,7 @@ public class CommandServiceImpl implements CommandService {
     private final AttendanceCommand attendanceCommand;
     private final AttendanceRankCommand attendanceRankCommand;
     private final OmokCommand omokCommand;
+    private final YachtCommand yachtCommand;
     private final GamblingCommand gamblingCommand;
     private final InventoryCommand inventoryCommand;
     private final ShopCommand shopCommand;
@@ -123,6 +124,10 @@ public class CommandServiceImpl implements CommandService {
                         || parameter == CommandParameter.OMOK_CONTINUE
                         || parameter == CommandParameter.OMOK_SKIN)
                     omokCommand.execute(event);
+                else if (parameter == CommandParameter.YACHT_PVP
+                        || parameter == CommandParameter.YACHT_QUIT
+                        || parameter == CommandParameter.YACHT_CONTINUE)
+                    yachtCommand.execute(event);
                 else if (parameter == CommandParameter.GAMBLING_MUKCHIBA
                         || parameter == CommandParameter.GAMBLING_SLOTMACHINE
                         || parameter == CommandParameter.GAMBLING_HORSE_RACING)

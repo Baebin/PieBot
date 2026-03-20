@@ -24,6 +24,8 @@ public enum Sentence {
     OMOK("오목"),
     OMOK_RANK("오목 순위"),
 
+    YACHT("요트 다이스"),
+
     GAMBLING_MUKCHIBA("묵찌빠 게임"),
     GAMBLING_SLOTMACHINE("슬롯머신 게임"),
     GAMBLING_HORSE_RACING("경마 게임"),

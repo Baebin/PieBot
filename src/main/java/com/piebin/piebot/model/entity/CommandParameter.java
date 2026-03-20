@@ -28,6 +28,10 @@ public enum CommandParameter {
     OMOK_CONTINUE(null, new String[] { "omok", "오목" }, "[continue/이어하기]", "오목 게임을 재개합니다.", CommandMode.EQUAL),
     OMOK_SKIN(null, new String[] { "omok", "오목" }, "[skin/스킨] [스킨명/해제]", "오목판 스킨을 설정합니다.", CommandMode.EQUAL),
 
+    YACHT_PVP(null, new String[] { "yacht", "요트", "야추", "요트다이스", "야추다이스" }, "[yacht/요트] [pvp/대전] [유저]", "요트 다이스 대전을 신청합니다.", CommandMode.EQUAL),
+    YACHT_QUIT(null, new String[] { "yacht", "요트", "야추", "요트다이스", "야추다이스" }, "[yacht/요트] [quit/퇴장] [유저]", "요트 다이스 게임을 종료합니다.", CommandMode.EQUAL),
+    YACHT_CONTINUE(null, new String[] { "yacht", "요트", "야추", "요트다이스", "야추다이스" }, "[yacht/요트] [continue/이어하기]", "오목 게임을 재개합니다.", CommandMode.EQUAL),
+
     GAMBLING_MUKCHIBA(null, new String[] { "gambling", "도박" }, "[묵찌빠] [금액]", "묵찌빠 게임을 시작합니다.", CommandMode.EQUAL),
     GAMBLING_SLOTMACHINE(null, new String[] { "gambling", "도박" }, "[슬롯머신] [금액]", "슬롯머신 게임을 시작합니다.", CommandMode.EQUAL),
     GAMBLING_HORSE_RACING(null, new String[] { "gambling", "도박" }, "[경마] [금액]", "경마 게임을 시작합니다.", CommandMode.EQUAL),
