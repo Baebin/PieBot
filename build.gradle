@@ -40,6 +40,6 @@ dependencies {
     implementation group: 'net.dv8tion', name: 'JDA', version: '5.0.0-beta.24'
 }
 
-tasks.named('test') {
+test {
     useJUnitPlatform()
 }
