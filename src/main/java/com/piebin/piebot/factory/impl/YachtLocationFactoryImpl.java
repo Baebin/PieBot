@@ -38,6 +38,11 @@ public class YachtLocationFactoryImpl implements YachtLocationFactory {
         );
     }
 
+    @Override
+    public Pair<Integer, Integer> getSelectedDiceLocation(int number) {
+        return getSelectedDiceLocations().get(number - 1);
+    }
+
     @Bean
     @Override
     public List<Pair<Integer, Integer>> getNonSelectedDiceLocations() {
@@ -91,44 +96,44 @@ public class YachtLocationFactoryImpl implements YachtLocationFactory {
 
     @Bean
     @Override
-    public Pair<Integer, Integer> getFourOfAKindLocation() {
+    public Pair<Integer, Integer> getChoiceLocation() {
         return new Pair<>(SECTION_X, 618);
     }
 
     @Bean
     @Override
-    public Pair<Integer, Integer> getFullHouseLocation() {
+    public Pair<Integer, Integer> getFourOfAKindLocation() {
         return new Pair<>(SECTION_X, 651);
+    }
+
+    @Bean
+    @Override
+    public Pair<Integer, Integer> getFullHouseLocation() {
+        return new Pair<>(SECTION_X, 685);
 
     }
 
     @Bean
     @Override
     public Pair<Integer, Integer> getSmallStraightLocation() {
-        return new Pair<>(SECTION_X, 685);
-    }
-
-    @Bean
-    @Override
-    public Pair<Integer, Integer> getLargeStraightHouseLocation() {
         return new Pair<>(SECTION_X, 719);
     }
 
     @Bean
     @Override
-    public Pair<Integer, Integer> getYachtLocation() {
+    public Pair<Integer, Integer> getLargeStraightHouseLocation() {
         return new Pair<>(SECTION_X, 754);
     }
 
     @Bean
     @Override
-    public Pair<Integer, Integer> getTotalPointsLocation() {
+    public Pair<Integer, Integer> getYachtLocation() {
         return new Pair<>(SECTION_X, 788);
     }
 
     @Bean
     @Override
-    public Pair<Integer, Integer> getChoiceLocation() {
+    public Pair<Integer, Integer> getTotalPointsLocation() {
         return new Pair<>(SECTION_X, 828);
     }
 }
