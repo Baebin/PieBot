@@ -4,12 +4,10 @@ import com.piebin.piebot.factory.FontFactory;
 import com.piebin.piebot.factory.YachtLocationFactory;
 import com.piebin.piebot.model.domain.YachtRoom;
 import com.piebin.piebot.model.domain.YachtScoreBoard;
-import com.piebin.piebot.model.repository.YachtRoomRepository;
 import com.piebin.piebot.service.ImageService;
 import com.piebin.piebot.service.YachtDrawingService;
 import kotlin.Pair;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,17 +23,12 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class YachtDrawingServiceImpl implements YachtDrawingService {
-    private static final int BONUS_SCORE = 35;
-    private static final int BONUS_NEED_SCORE = 63;
-
     private static final String FILE_PATH = "yacht";
     private static final String FILE_EXT = "png";
 
     private static final String FILE_BOARD = "board";
     private static final String FILE_DICES_PREFIX = "dice_";
     private static final List<String> FILE_DICES_NAMES = Arrays.asList("one", "two", "three", "four", "five", "six");
-
-    private final YachtRoomRepository yachtRoomRepository;
 
     private final FontFactory fontFactory;
     private final YachtLocationFactory yachtLocationFactory;
