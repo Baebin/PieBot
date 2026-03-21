@@ -8,10 +8,7 @@ import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
-import java.io.File;
-
 public interface YachtService {
-    File getBoard(YachtRoom yachtRoom);
     String getBoardString(YachtRoom yachtRoom);
 
     Message sendYachtRoomMessage(MessageChannelUnion channel, YachtRoom yachtRoom);

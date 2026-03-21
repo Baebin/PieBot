@@ -9,6 +9,7 @@ import com.piebin.piebot.service.ImageService;
 import com.piebin.piebot.service.YachtDrawingService;
 import kotlin.Pair;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -123,9 +124,10 @@ public class YachtDrawingServiceImpl implements YachtDrawingService {
     @Override
     @Transactional(readOnly = true)
     public File getBoard(YachtRoom yachtRoom) throws IOException {
+        if (yachtRoom.getTurnCount() == 0 && yachtRoom.getRollCount() == 0)
+            return imageService.getResourceFile(FILE_PATH, FILE_BOARD, FILE_EXT);
         YachtScoreBoard accountScoreBoard = yachtRoom.getAccountScoreBoard();
         YachtScoreBoard opponentScoreBoard = yachtRoom.getOpponentScoreBoard();
-        // YachtScoreBoard scoreBoard = (yachtRoom.getTurnCount() == 0 ? accountScoreBoard : opponentScoreBoard);
 
         // Board Image
         BufferedImage bufferedImageBoard = imageService.getBufferedResourceImage(FILE_PATH, FILE_BOARD, FILE_EXT);

@@ -8,6 +8,7 @@ import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.model.repository.YachtRepository;
 import com.piebin.piebot.model.repository.YachtRoomRepository;
 import com.piebin.piebot.service.ImageService;
+import com.piebin.piebot.service.YachtDrawingService;
 import com.piebin.piebot.service.YachtService;
 import com.piebin.piebot.utility.*;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +20,10 @@ import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.utils.FileUpload;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,23 +35,11 @@ public class YachtServiceImpl implements YachtService {
     private static final String BOARD = "board";
 
     private final ImageService imageService;
+    private final YachtDrawingService yachtDrawingService;
 
     private final AccountRepository accountRepository;
     private final YachtRepository yachtRepository;
     private final YachtRoomRepository yachtRoomRepository;
-
-    @Override
-    public File getBoard(YachtRoom yachtRoom) {
-        File file = imageService.getFile("yacht", yachtRoom.getIdx() + "", "png");
-        if (!file.exists()) {
-            ClassPathResource resource = new ClassPathResource("yacht/" + BOARD + ".png");
-            try {
-                return resource.getFile();
-            } catch (IOException e) {
-            }
-        }
-        return file;
-    }
 
     @Override
     public String getBoardString(YachtRoom yachtRoom) {
@@ -70,7 +57,12 @@ public class YachtServiceImpl implements YachtService {
 
     @Override
     public Message sendYachtRoomMessage(MessageChannelUnion channel, YachtRoom yachtRoom) {
-        FileUpload fileUpload = FileUpload.fromData(getBoard(yachtRoom));
+        FileUpload fileUpload = null;
+        try {
+            fileUpload = FileUpload.fromData(yachtDrawingService.getBoard(yachtRoom));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         Message message = channel.sendMessage(getBoardString(yachtRoom)).setFiles(fileUpload).complete();
 
         message.addReaction(UniEmoji.SMALL_RED_TRIANGLE.getEmoji()).complete();
