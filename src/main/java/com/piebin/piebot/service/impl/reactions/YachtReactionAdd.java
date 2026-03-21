@@ -1,8 +1,6 @@
 package com.piebin.piebot.service.impl.reactions;
 
 import com.piebin.piebot.model.domain.Account;
-import com.piebin.piebot.model.domain.Omok;
-import com.piebin.piebot.model.domain.OmokRoom;
 import com.piebin.piebot.model.domain.YachtRoom;
 import com.piebin.piebot.model.entity.CommandSentence;
 import com.piebin.piebot.model.entity.EmbedSentence;
@@ -10,7 +8,6 @@ import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.model.repository.YachtRoomRepository;
 import com.piebin.piebot.service.PieReactionAdd;
 import com.piebin.piebot.service.YachtService;
-import com.piebin.piebot.service.impl.commands.YachtCommand;
 import com.piebin.piebot.utility.EmbedMessageHelper;
 import com.piebin.piebot.utility.ReactionManager;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +18,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.utils.FileUpload;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.*;
 import java.util.Optional;
@@ -31,11 +29,10 @@ public class YachtReactionAdd implements PieReactionAdd {
     private final AccountRepository accountRepository;
     private final YachtRoomRepository yachtRoomRepository;
 
-    private final YachtCommand yachtCommand;
-
     private final YachtService yachtService;
 
     @Override
+    @Transactional
     public void execute(MessageReactionAddEvent event) {
         User user = event.getUser();
         MessageReaction reaction = event.getReaction();
@@ -70,10 +67,22 @@ public class YachtReactionAdd implements PieReactionAdd {
             return;
         }
 
+        // Accepted Message
         MessageEmbed embed = EmbedMessageHelper.getEmbedBuilder(EmbedSentence.YACHT_PVP_STARTED, Color.GREEN).build();
         message.editMessageEmbeds(embed).queue();
 
-        FileUpload fileUpload = FileUpload.fromData(yachtService.getBoard(new YachtRoom()));
-        event.getChannel().sendMessage("Test").setFiles(fileUpload).complete();
+        // Create Game Room
+        YachtRoom yachtRoom = YachtRoom.builder()
+                .account(from)
+                .opponent(to)
+                .build();
+        yachtRoomRepository.save(yachtRoom);
+
+        // Send Message
+        FileUpload fileUpload = FileUpload.fromData(yachtService.getBoard(yachtRoom));
+        Message boardMessage = event.getChannel().sendMessage(yachtService.getBoardString(yachtRoom)).setFiles(fileUpload).complete();
+
+        // Set Message Id
+        yachtRoom.setMessageId(boardMessage.getId());
     }
 }

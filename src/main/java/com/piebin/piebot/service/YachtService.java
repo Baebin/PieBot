@@ -6,4 +6,5 @@ import java.io.File;
 
 public interface YachtService {
     File getBoard(YachtRoom yachtRoom);
+    String getBoardString(YachtRoom yachtRoom);
 }
