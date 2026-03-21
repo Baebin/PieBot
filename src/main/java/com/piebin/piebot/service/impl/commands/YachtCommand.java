@@ -30,6 +30,10 @@ public class YachtCommand implements PieCommand {
                 yachtService.quitYachtRoom(event);
                 return;
             }
+            if (args.get(2).equals("이어하기") || args.get(2).equalsIgnoreCase("continue")) {
+                yachtService.continueYachtRoom(event);
+                return;
+            }
         }
         EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_ARG1);
     }

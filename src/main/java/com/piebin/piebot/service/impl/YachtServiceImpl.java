@@ -45,7 +45,7 @@ public class YachtServiceImpl implements YachtService {
 
     @Override
     public File getBoard(YachtRoom yachtRoom) {
-        File file = imageService.getFile("omok", yachtRoom.getIdx() + "", "png");
+        File file = imageService.getFile("yacht", yachtRoom.getIdx() + "", "png");
         if (!file.exists()) {
             ClassPathResource resource = new ClassPathResource("yacht/" + BOARD + ".png");
             try {
@@ -178,6 +178,28 @@ public class YachtServiceImpl implements YachtService {
         addTie(yachtRoom.getOpponent());
 
         yachtRoomRepository.delete(yachtRoom);
+    }
+
+    @Override
+    @Transactional
+    public void continueYachtRoom(MessageReceivedEvent event) {
+        Optional<Account> optionalAccount = accountRepository.findById(event.getAuthor().getId());
+        if (optionalAccount.isEmpty())
+            return;
+        Account account = optionalAccount.get();
+        Optional<YachtRoom> optionalYachtRoom = yachtRoomRepository.findByAccountOrOpponent(account, account);
+        if (optionalYachtRoom.isEmpty()) {
+            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_CONTINUE_NONE);
+            return;
+        }
+        YachtRoom yachtRoom = optionalYachtRoom.get();
+
+        // Send Message
+        FileUpload fileUpload = FileUpload.fromData(getBoard(yachtRoom));
+        Message boardMessage = event.getChannel().sendMessage(getBoardString(yachtRoom)).setFiles(fileUpload).complete();
+
+        // Set Message Id
+        yachtRoom.setMessageId(boardMessage.getId());
     }
 
     @Override

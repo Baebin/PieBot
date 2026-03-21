@@ -15,6 +15,7 @@ public interface YachtService {
     void invitePVP(MessageReceivedEvent event);
     void createYachtRoom(MessageReactionAddEvent event);
     void quitYachtRoom(MessageReceivedEvent event);
+    void continueYachtRoom(MessageReceivedEvent event);
 
     Yacht getOrCreateYacht(Account account);
     void addWin(Account account);
