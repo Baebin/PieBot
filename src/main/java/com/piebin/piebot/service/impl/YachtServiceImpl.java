@@ -9,15 +9,13 @@ import com.piebin.piebot.model.repository.YachtRepository;
 import com.piebin.piebot.model.repository.YachtRoomRepository;
 import com.piebin.piebot.service.ImageService;
 import com.piebin.piebot.service.YachtService;
-import com.piebin.piebot.utility.CommandManager;
-import com.piebin.piebot.utility.EmbedMessageHelper;
-import com.piebin.piebot.utility.MessageManager;
-import com.piebin.piebot.utility.ReactionManager;
+import com.piebin.piebot.utility.*;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.utils.FileUpload;
@@ -68,6 +66,19 @@ public class YachtServiceImpl implements YachtService {
 
         String board = String.join("\n", lines);
         return board;
+    }
+
+    @Override
+    public Message sendYachtRoomMessage(MessageChannelUnion channel, YachtRoom yachtRoom) {
+        FileUpload fileUpload = FileUpload.fromData(getBoard(yachtRoom));
+        Message message = channel.sendMessage(getBoardString(yachtRoom)).setFiles(fileUpload).complete();
+
+        message.addReaction(UniEmoji.SMALL_RED_TRIANGLE.getEmoji()).complete();
+        message.addReaction(UniEmoji.SMALL_RED_TRIANGLE_DOWN.getEmoji()).complete();
+        message.addReaction(UniEmoji.RECYCLE.getEmoji()).complete();
+        for (int i = 1; i <= 5; i++)
+            message.addReaction(EmojiManager.getEmoji(i)).complete();
+        return message;
     }
 
     @Override
@@ -150,12 +161,8 @@ public class YachtServiceImpl implements YachtService {
                 .build();
         yachtRoomRepository.save(yachtRoom);
 
-        // Send Message
-        FileUpload fileUpload = FileUpload.fromData(getBoard(yachtRoom));
-        Message boardMessage = event.getChannel().sendMessage(getBoardString(yachtRoom)).setFiles(fileUpload).complete();
-
         // Set Message Id
-        yachtRoom.setMessageId(boardMessage.getId());
+        yachtRoom.setMessageId(sendYachtRoomMessage(event.getChannel(), yachtRoom).getId());
     }
 
 
@@ -192,14 +199,9 @@ public class YachtServiceImpl implements YachtService {
             EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_CONTINUE_NONE);
             return;
         }
-        YachtRoom yachtRoom = optionalYachtRoom.get();
-
-        // Send Message
-        FileUpload fileUpload = FileUpload.fromData(getBoard(yachtRoom));
-        Message boardMessage = event.getChannel().sendMessage(getBoardString(yachtRoom)).setFiles(fileUpload).complete();
-
         // Set Message Id
-        yachtRoom.setMessageId(boardMessage.getId());
+        YachtRoom yachtRoom = optionalYachtRoom.get();
+        yachtRoom.setMessageId(sendYachtRoomMessage(event.getChannel(), yachtRoom).getId());
     }
 
     @Override

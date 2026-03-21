@@ -13,6 +13,14 @@ public enum UniEmoji {
     ARROW_RIGHT_DOUBLE("⏩"),
     ARROW_REFRESH("\uD83D\uDD04"),
 
+    ARROW_HEADING_UP("⤴\uFE0F"),
+    ARROW_HEADING_DOWN("⤵\uFE0F"),
+
+    RECYCLE("♻\uFE0F"),
+
+    SMALL_RED_TRIANGLE("\uD83D\uDD3A"),
+    SMALL_RED_TRIANGLE_DOWN("\uD83D\uDD3B"),
+
     NUM_0("0️⃣"),
     NUM_1("1️⃣"),
     NUM_2("2️⃣"),
