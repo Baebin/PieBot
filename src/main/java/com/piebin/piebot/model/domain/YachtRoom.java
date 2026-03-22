@@ -34,6 +34,10 @@ public class YachtRoom {
     @Builder.Default
     private Integer rollCount = 0;
 
+    @Column(name = "is_holding_dice")
+    @Builder.Default
+    private Boolean isHoldingDice = true;
+
     @OneToOne(cascade = CascadeType.ALL)
     @Builder.Default
     private YachtScoreBoard accountScoreBoard = new YachtScoreBoard();
@@ -50,5 +54,29 @@ public class YachtRoom {
     @Builder.Default
     private List<Integer> nonSelectedDices = new ArrayList<>();
 
+    private String channelId;
     private String messageId;
+
+    public boolean canRoll() {
+        return (rollCount < 3);
+    }
+
+    public void increaseRollCount() {
+        rollCount++;
+    }
+
+    public List<Integer> getDices() {
+        List<Integer> dices = new ArrayList<>();
+        dices.addAll(selectedDices);
+        dices.addAll(nonSelectedDices);
+        return dices;
+    }
+
+    public void nextTurn() {
+        turnCount += 1;
+        rollCount = 0;
+        isHoldingDice = true;
+        selectedDices.clear();
+        nonSelectedDices.clear();
+    }
 }

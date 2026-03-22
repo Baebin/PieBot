@@ -23,6 +23,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class YachtDrawingServiceImpl implements YachtDrawingService {
+    private static final int FILE_WIDTH = (int) (1536 * 0.5);
+    private static final int FILE_HEIGHT = (int) (1024 * 0.5);
+
     private static final String FILE_PATH = "yacht";
     private static final String FILE_EXT = "png";
 
@@ -34,6 +37,20 @@ public class YachtDrawingServiceImpl implements YachtDrawingService {
     private final YachtLocationFactory yachtLocationFactory;
 
     private final ImageService imageService;
+
+    /*
+    File Setting
+    */
+
+    private BufferedImage resize(BufferedImage image, int width, int height) {
+        BufferedImage resizedImage = new BufferedImage(width, height, image.getType());
+
+        Graphics2D g = resizedImage.createGraphics();
+        g.drawImage(image, 0, 0, width, height, null);
+        g.dispose();
+
+        return resizedImage;
+    }
 
     /*
     Drawing
@@ -146,11 +163,11 @@ public class YachtDrawingServiceImpl implements YachtDrawingService {
 
         // Selected Dice
         for (int i = 0; i < yachtRoom.getSelectedDices().size(); i++)
-            drawImage(graphics2D, bufferedDiceImages.get(i), yachtLocationFactory.getSelectedDiceLocation(i + 1));
+            drawImage(graphics2D, bufferedDiceImages.get(yachtRoom.getSelectedDices().get(i) - 1), yachtLocationFactory.getSelectedDiceLocation(i + 1));
 
         // Non Selected Dice
         for (int i = 0; i < yachtRoom.getNonSelectedDices().size(); i++)
-            drawImage(graphics2D, bufferedDiceImages.get(i), yachtLocationFactory.getRandomDiceLocation(i + 1));
+            drawImage(graphics2D, bufferedDiceImages.get(yachtRoom.getNonSelectedDices().get(i) - 1), yachtLocationFactory.getRandomDiceLocation(i + 1));
 
         /*
         Score Board
@@ -161,9 +178,15 @@ public class YachtDrawingServiceImpl implements YachtDrawingService {
             drawAllScores(graphics2D, (isOpponent ? opponentScoreBoard : accountScoreBoard), isOpponent);
         }
 
+        // Memory
+        graphics2D.dispose();
+
         /*
         File
         */
+
+        // Rezie
+        bufferedImageBoard = resize(bufferedImageBoard, FILE_WIDTH, FILE_HEIGHT);
 
         // Make File
         File file = imageService.getFile(FILE_PATH, yachtRoom.getIdx() + "", FILE_EXT);

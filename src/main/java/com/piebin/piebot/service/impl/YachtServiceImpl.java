@@ -1,5 +1,7 @@
 package com.piebin.piebot.service.impl;
 
+import com.piebin.piebot.component.DiscordJDA;
+import com.piebin.piebot.factory.YachtCommandFactory;
 import com.piebin.piebot.model.domain.*;
 import com.piebin.piebot.model.entity.CommandSentence;
 import com.piebin.piebot.model.entity.EmbedSentence;
@@ -7,16 +9,18 @@ import com.piebin.piebot.model.entity.UniEmoji;
 import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.model.repository.YachtRepository;
 import com.piebin.piebot.model.repository.YachtRoomRepository;
-import com.piebin.piebot.service.ImageService;
 import com.piebin.piebot.service.YachtDrawingService;
 import com.piebin.piebot.service.YachtService;
 import com.piebin.piebot.utility.*;
+import kotlin.Pair;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.utils.FileUpload;
@@ -25,21 +29,32 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class YachtServiceImpl implements YachtService {
-    private static final String BOARD = "board";
+    private final int BONUS_SCORE = 35;
+    private final int BONUS_NEED_SCORE = 63;
+    private final int SMALL_STRAIGHT_SCORE = 15;
+    private final int LARGE_STRAIGHT_SCORE = 30;
+    private final int YACHT_SCORE = 50;
 
-    private final ImageService imageService;
-    private final YachtDrawingService yachtDrawingService;
+    private final DiscordJDA discordJDA;
 
     private final AccountRepository accountRepository;
     private final YachtRepository yachtRepository;
     private final YachtRoomRepository yachtRoomRepository;
+
+    private final YachtCommandFactory yachtCommandFactory;
+
+    private final YachtDrawingService yachtDrawingService;
 
     @Override
     public String getBoardString(YachtRoom yachtRoom) {
@@ -56,8 +71,9 @@ public class YachtServiceImpl implements YachtService {
     }
 
     @Override
-    public Message sendYachtRoomMessage(MessageChannelUnion channel, YachtRoom yachtRoom) {
-        FileUpload fileUpload = null;
+    @Transactional(readOnly = true)
+    public Message sendYachtRoomMessage(MessageChannel channel, YachtRoom yachtRoom) {
+        FileUpload fileUpload;
         try {
             fileUpload = FileUpload.fromData(yachtDrawingService.getBoard(yachtRoom));
         } catch (IOException e) {
@@ -71,6 +87,347 @@ public class YachtServiceImpl implements YachtService {
         for (int i = 1; i <= 5; i++)
             message.addReaction(EmojiManager.getEmoji(i)).complete();
         return message;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void editYachtRoomMessage(YachtRoom yachtRoom) {
+        CompletableFuture.runAsync(() -> {
+            FileUpload fileUpload ;
+            try {
+                fileUpload = FileUpload.fromData(yachtDrawingService.getBoard(yachtRoom));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            Optional<Message> optionalMessage = discordJDA.getMessageByID(yachtRoom.getChannelId(), yachtRoom.getMessageId());
+            if (optionalMessage.isEmpty())
+                return;
+            Message message = optionalMessage.get();
+            message.editMessage(getBoardString(yachtRoom)).setFiles(fileUpload).complete();
+        });
+    }
+
+    /*
+    Reaction Add Event
+    */
+
+    private Optional<YachtRoom> getYachtRoomIfMyTurn(String id) {
+        // YachtRoom Exists?
+        if (!yachtRoomRepository.existsByAccount_IdOrOpponent_Id(id, id))
+            return Optional.empty();
+        log.info("Yacht Room Exists");
+
+        // YachtRoom
+        Optional<YachtRoom> optionalYachtRoom = yachtRoomRepository.findByAccount_IdOrOpponent_Id(id, id);
+        if (optionalYachtRoom.isEmpty())
+            return Optional.empty();
+        YachtRoom yachtRoom = optionalYachtRoom.get();
+        log.info("Yacht Room Found");
+
+        // Turn Check
+        if (yachtRoom.getTurnCount() % 2 == 0 && yachtRoom.getOpponent().getId().equals(id))
+            return Optional.empty();
+        if (yachtRoom.getTurnCount() % 2 != 0 && yachtRoom.getAccount().getId().equals(id))
+            return Optional.empty();
+        log.info("Yacht Room Turn Checked");
+
+        return Optional.of(yachtRoom);
+    }
+
+    @Override
+    @Transactional
+    public void selectEmoji(MessageReactionAddEvent event) {
+        String id = event.getUserId();
+        Emoji emoji = event.getEmoji();
+        log.info("id: {}, emoji: {}", id, emoji);
+
+        Optional<YachtRoom> optionalYachtRoom = getYachtRoomIfMyTurn(id);
+        if (optionalYachtRoom.isEmpty())
+            return;
+        YachtRoom yachtRoom = optionalYachtRoom.get();
+
+        if (emoji.equals(UniEmoji.RECYCLE.getEmoji())) {
+            rollDices(yachtRoom);
+            editYachtRoomMessage(yachtRoom);
+        } else if (emoji.equals(UniEmoji.SMALL_RED_TRIANGLE.getEmoji())) {
+            yachtRoom.setIsHoldingDice(true);
+        } else if (emoji.equals(UniEmoji.SMALL_RED_TRIANGLE_DOWN.getEmoji())) {
+            yachtRoom.setIsHoldingDice(false);
+        } else {
+            int number = EmojiManager.getNumber(emoji);
+            if (number < 1 || number > 5)
+                return;
+            if (yachtRoom.getIsHoldingDice())
+                selectDice(yachtRoom, number);
+            else deselectDice(yachtRoom, number);
+            editYachtRoomMessage(yachtRoom);
+        }
+
+    }
+
+    @Override
+    @Transactional
+    public void select(MessageReceivedEvent event, String type) {
+        String id = event.getAuthor().getId();
+        log.info("id: {}, type: {}", id, type);
+
+        Optional<YachtRoom> optionalYachtRoom = getYachtRoomIfMyTurn(id);
+        if (optionalYachtRoom.isEmpty())
+            return;
+        YachtRoom yachtRoom = optionalYachtRoom.get();
+
+        // Roll Check
+        if (yachtRoom.getRollCount() == 0)
+            return;
+        log.info("Yacht Room Roll Count >= 1");
+
+        // 1 ~ 6
+        for (int i = 1; i <= 6; i++) {
+            if (!type.equals(i + ""))
+                continue;
+            log.info("command found: {}", i);
+
+            selectNumberScore(yachtRoom, i);
+            yachtRoom.nextTurn();
+
+            // Discord Message
+            event.getMessage().delete().queue();
+            editYachtRoomMessage(yachtRoom);
+            return;
+        }
+
+        Map<List<String>, Consumer<YachtRoom>> commandMap = Map.of(
+                yachtCommandFactory.getChoiceCommands(), this::selectChoiceScore,
+                yachtCommandFactory.getFourOfAKindCommands(), this::selectFourOfAKindScore,
+                yachtCommandFactory.getFullHouseCommands(), this::selectFullHouseScore,
+                yachtCommandFactory.getSmallStraightCommands(), this::selectSmallStraightScore,
+                yachtCommandFactory.getLargeStraightCommands(), this::selectLargeStraightScore,
+                yachtCommandFactory.getYachtCommands(), this::selectYachtScore
+        );
+        for (Map.Entry<List<String>, Consumer<YachtRoom>> entry : commandMap.entrySet()) {
+            if (entry.getKey().stream().anyMatch(c -> c.equalsIgnoreCase(type))) {
+                log.info("command found: {}", entry.getKey());
+
+                entry.getValue().accept(yachtRoom);
+                yachtRoom.nextTurn();
+
+                // Discord Message
+                event.getMessage().delete().queue();
+                editYachtRoomMessage(yachtRoom);
+                return;
+            }
+        }
+    }
+
+    /*
+    Score
+    */
+
+    private YachtScoreBoard getScoreBoard(YachtRoom yachtRoom) {
+        return (yachtRoom.getTurnCount() % 2 == 0 ? yachtRoom.getAccountScoreBoard() : yachtRoom.getOpponentScoreBoard());
+    }
+
+    private int getNumberScore(YachtRoom yachtRoom, int number) {
+        int cnt = 0;
+        for (int dice : yachtRoom.getDices())
+            if (dice == number)
+                cnt++;
+        return (cnt * number);
+    }
+
+    private Pair<Integer, List<Integer>> getSumAndCnts(YachtRoom yachtRoom) {
+        int sum = 0;
+        List<Integer> cnts = new ArrayList<>(Collections.nCopies(6, 0));
+        for (int dice : yachtRoom.getDices()) {
+            cnts.set(dice - 1, cnts.get(dice - 1) + 1);
+            sum += dice;
+        }
+        return new Pair<>(sum, cnts);
+    }
+
+    @Override
+    @Transactional
+    public void selectNumberScore(YachtRoom yachtRoom, int number) {
+        YachtScoreBoard scoreBoard = getScoreBoard(yachtRoom);
+        Map<Integer, Supplier<Integer>> getters = Map.of(
+                1, scoreBoard::getAces,
+                2, scoreBoard::getDeuces,
+                3, scoreBoard::getThrees,
+                4, scoreBoard::getFours,
+                5, scoreBoard::getFives,
+                6, scoreBoard::getSixes
+        );
+        Map<Integer, Consumer<Integer>> setters = Map.of(
+                1, scoreBoard::setAces,
+                2, scoreBoard::setDeuces,
+                3, scoreBoard::setThrees,
+                4, scoreBoard::setFours,
+                5, scoreBoard::setFives,
+                6, scoreBoard::setSixes
+        );
+        if (getters.get(number).get() != null)
+            return;
+        setters.get(number).accept(getNumberScore(yachtRoom, number));
+        selectBonusScore(yachtRoom);
+    }
+
+    @Override
+    @Transactional
+    public void selectBonusScore(YachtRoom yachtRoom) {
+        YachtScoreBoard scoreBoard = getScoreBoard(yachtRoom);
+        if (scoreBoard.getBonus() != null)
+            return;
+        int sum = 0;
+        for (Integer score : scoreBoard.getNumberScores()) {
+            if (score == null)
+                return;
+            sum += score;
+        }
+        scoreBoard.setBonus(sum >= BONUS_NEED_SCORE ? BONUS_SCORE : 0);
+    }
+
+    @Override
+    @Transactional
+    public void selectChoiceScore(YachtRoom yachtRoom) {
+        YachtScoreBoard scoreBoard = getScoreBoard(yachtRoom);
+        if (scoreBoard.getChoice() != null)
+            return;
+        int score = 0;
+        for (int dice : yachtRoom.getDices())
+            score += dice;
+        scoreBoard.setChoice(score);
+    }
+
+    @Override
+    @Transactional
+    public void selectFourOfAKindScore(YachtRoom yachtRoom) {
+        YachtScoreBoard scoreBoard = getScoreBoard(yachtRoom);
+        if (scoreBoard.getFourOfAKind() != null)
+            return;
+
+        // Score & Count
+        Pair<Integer, List<Integer>> p = getSumAndCnts(yachtRoom);
+
+        // Count Check
+        boolean hasFourOfAKind = false;
+        for (int cnt : p.getSecond()) {
+            if (cnt < 4)
+                continue;
+            hasFourOfAKind = true;
+            break;
+        }
+        scoreBoard.setFourOfAKind(hasFourOfAKind ? p.getFirst() : 0);
+    }
+
+    @Override
+    @Transactional
+    public void selectFullHouseScore(YachtRoom yachtRoom) {
+        YachtScoreBoard scoreBoard = getScoreBoard(yachtRoom);
+        if (scoreBoard.getFullHouse() != null)
+            return;
+
+        // Score & Count
+        Pair<Integer, List<Integer>> p = getSumAndCnts(yachtRoom);
+
+        // Count Check
+        boolean hasTwo = false, hasThree = false;
+        for (int cnt : p.getSecond()) {
+            if (cnt == 2)
+                hasTwo = true;
+            else if (cnt == 3)
+                hasThree = true;
+        }
+        scoreBoard.setFullHouse((hasTwo && hasThree) ? p.component1() : 0);
+    }
+
+    @Override
+    @Transactional
+    public void selectSmallStraightScore(YachtRoom yachtRoom) {
+        YachtScoreBoard scoreBoard = getScoreBoard(yachtRoom);
+        if (scoreBoard.getSmallStraight() != null)
+            return;
+
+        // Count
+        List<Integer> cnts = getSumAndCnts(yachtRoom).component2();
+
+        // Count Check
+        int straightCnt = 0;
+        for (int cnt : cnts) {
+            straightCnt = (cnt == 0 ? 0 : straightCnt + 1);
+            if (straightCnt >= 4) break;
+        }
+        scoreBoard.setSmallStraight((straightCnt >= 4) ? SMALL_STRAIGHT_SCORE : 0);
+    }
+
+    @Override
+    @Transactional
+    public void selectLargeStraightScore(YachtRoom yachtRoom) {
+        YachtScoreBoard scoreBoard = getScoreBoard(yachtRoom);
+        if (scoreBoard.getLargeStraight() != null)
+            return;
+
+        // Count
+        List<Integer> cnts = getSumAndCnts(yachtRoom).component2();
+
+        // Count Check
+        int straightCnt = 0;
+        for (int cnt : cnts) {
+            straightCnt = (cnt == 0 ? 0 : straightCnt + 1);
+            if (straightCnt >= 5) break;
+        }
+        scoreBoard.setLargeStraight((straightCnt >= 5) ? LARGE_STRAIGHT_SCORE : 0);
+    }
+
+    @Override
+    @Transactional
+    public void selectYachtScore(YachtRoom yachtRoom) {
+        YachtScoreBoard scoreBoard = getScoreBoard(yachtRoom);
+        if (scoreBoard.getYacht() != null)
+            return;
+
+        // Count
+        List<Integer> cnts = getSumAndCnts(yachtRoom).component2();
+
+        // Count Check
+        boolean hasYacht = false;
+        for (int cnt : cnts) {
+            if (cnt < 5)
+                continue;
+            hasYacht = true;
+            break;
+        }
+        scoreBoard.setYacht(hasYacht ? YACHT_SCORE : 0);
+    }
+
+    @Override
+    @Transactional
+    public void selectDice(YachtRoom yachtRoom, int number) {
+        if (number > yachtRoom.getNonSelectedDices().size())
+            return;
+        yachtRoom.getSelectedDices().add(yachtRoom.getNonSelectedDices().get(number - 1));
+        yachtRoom.getNonSelectedDices().remove(number - 1);
+    }
+
+    @Override
+    @Transactional
+    public void deselectDice(YachtRoom yachtRoom, int number) {
+        if (number > yachtRoom.getSelectedDices().size())
+            return;
+        yachtRoom.getNonSelectedDices().add(yachtRoom.getSelectedDices().get(number - 1));
+        yachtRoom.getSelectedDices().remove(number - 1);
+    }
+
+    @Override
+    @Transactional
+    public void rollDices(YachtRoom yachtRoom) {
+        if (!yachtRoom.canRoll())
+            return;
+        yachtRoom.setNonSelectedDices(
+                (yachtRoom.getRollCount() == 0) ?
+                        IntStream.range(0, 5).mapToObj(dice -> RandomManager.nextInt(1, 6)).toList()
+                        : yachtRoom.getNonSelectedDices().stream().map(dice -> RandomManager.nextInt(1, 6)).toList());
+        yachtRoom.increaseRollCount();
     }
 
     @Override
@@ -153,8 +510,10 @@ public class YachtServiceImpl implements YachtService {
                 .build();
         yachtRoomRepository.save(yachtRoom);
 
-        // Set Message Id
-        yachtRoom.setMessageId(sendYachtRoomMessage(event.getChannel(), yachtRoom).getId());
+        // Set Message Info
+        Message sendMessage = sendYachtRoomMessage(event.getChannel(), yachtRoom);
+        yachtRoom.setChannelId(sendMessage.getChannelId());
+        yachtRoom.setMessageId(sendMessage.getId());
     }
 
 
@@ -191,9 +550,11 @@ public class YachtServiceImpl implements YachtService {
             EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_CONTINUE_NONE);
             return;
         }
-        // Set Message Id
         YachtRoom yachtRoom = optionalYachtRoom.get();
-        yachtRoom.setMessageId(sendYachtRoomMessage(event.getChannel(), yachtRoom).getId());
+        // Set Message Info
+        Message sendMessage = sendYachtRoomMessage(event.getChannel(), yachtRoom);
+        yachtRoom.setChannelId(sendMessage.getChannelId());
+        yachtRoom.setMessageId(sendMessage.getId());
     }
 
     @Override

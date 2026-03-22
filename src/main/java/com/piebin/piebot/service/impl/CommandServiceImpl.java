@@ -8,6 +8,7 @@ import com.piebin.piebot.model.dto.embed.EmbedDto;
 import com.piebin.piebot.model.entity.*;
 import com.piebin.piebot.model.repository.*;
 import com.piebin.piebot.service.CommandService;
+import com.piebin.piebot.service.YachtService;
 import com.piebin.piebot.service.impl.commands.*;
 import com.piebin.piebot.utility.CommandManager;
 import com.piebin.piebot.utility.EmbedMessageHelper;
@@ -31,6 +32,8 @@ import java.util.Optional;
 public class CommandServiceImpl implements CommandService {
     public static final String PREFIX = "ㅋ";
     public static final String PREFIX_ENGLISH = "z";
+
+    private final YachtService yachtService;
 
     private final AccountRepository accountRepository;
 
@@ -77,6 +80,11 @@ public class CommandServiceImpl implements CommandService {
             log.info("user: {}, args: {}", user, args);
             TextChannel channel = event.getChannel().asTextChannel();
 
+            // Yacht
+            if (args.size() == 2)
+                yachtService.select(event, args.get(1));
+
+            // Omok
             if (args.get(1).length() == 2 || args.get(1).length() == 3) {
                 try {
                     char x = args.get(1).toUpperCase().charAt(0);
