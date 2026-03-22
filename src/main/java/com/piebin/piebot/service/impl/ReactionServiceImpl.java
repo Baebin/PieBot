@@ -5,6 +5,7 @@ import com.piebin.piebot.exception.AccountException;
 import com.piebin.piebot.model.entity.EmbedSentence;
 import com.piebin.piebot.model.entity.Sentence;
 import com.piebin.piebot.service.AccountService;
+import com.piebin.piebot.service.AsyncService;
 import com.piebin.piebot.service.ReactionService;
 import com.piebin.piebot.service.impl.reactions.*;
 import com.piebin.piebot.utility.EmbedMessageHelper;
@@ -17,10 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -29,6 +28,7 @@ import java.util.function.Consumer;
 public class ReactionServiceImpl implements ReactionService {
     private final DiscordBotInfo botInfo;
 
+    private final AsyncService asyncService;
     private final AccountService accountService;
 
     private final HelpReactionAdd helpReactionAdd;
@@ -127,7 +127,7 @@ public class ReactionServiceImpl implements ReactionService {
             return;
 
         // Remove Emoji
-        CompletableFuture.runAsync(() -> {
+        asyncService.runAsync(() -> {
             User user = event.getUser();
             MessageReaction reaction = event.getReaction();
             reaction.removeReaction(user).queue();

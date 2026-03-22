@@ -9,6 +9,7 @@ import com.piebin.piebot.model.entity.UniEmoji;
 import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.model.repository.YachtRepository;
 import com.piebin.piebot.model.repository.YachtRoomRepository;
+import com.piebin.piebot.service.AsyncService;
 import com.piebin.piebot.service.YachtCacheService;
 import com.piebin.piebot.service.YachtDrawingService;
 import com.piebin.piebot.service.YachtService;
@@ -57,6 +58,7 @@ public class YachtServiceImpl implements YachtService {
 
     private final YachtCommandFactory yachtCommandFactory;
 
+    private final AsyncService asyncService;
     private final YachtCacheService yachtCacheService;
     private final YachtDrawingService yachtDrawingService;
 
@@ -99,7 +101,7 @@ public class YachtServiceImpl implements YachtService {
     @Override
     @Transactional(readOnly = true)
     public void editYachtRoomMessage(YachtRoom yachtRoom) {
-        CompletableFuture.runAsync(() -> {
+        asyncService.runAsyncWithCancel(yachtRoom.getMessageId(), () -> {
             FileUpload fileUpload ;
             try {
                 fileUpload = FileUpload.fromData(yachtDrawingService.getBoard(yachtRoom, true));
