@@ -54,7 +54,9 @@ public class AsyncTestService {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        asyncService.cancel(key);
+        asyncService.runAsyncWithCancel(key, () -> {
+            log.info("Test Piebin");
+        });
         try {
             Thread.sleep(1500);
         } catch (InterruptedException e) {

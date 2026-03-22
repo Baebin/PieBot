@@ -5,17 +5,29 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AsyncServiceImpl implements AsyncService {
-    private final Map<String, CompletableFuture> caches = new HashMap<>();
+    private final Map<String, CompletableFuture<?>> caches = new ConcurrentHashMap<>();
 
-    private void addAsyncCache(String key, CompletableFuture future) {
+    private final Executor executor = Executors.newCachedThreadPool();
+
+    private boolean hasAsyncCache(String key) {
+        return caches.containsKey(key);
+    }
+
+    private CompletableFuture<?> getAsyncCache(String key) {
+        return caches.get(key);
+    }
+
+    private void addAsyncCache(String key, CompletableFuture<?> future) {
         caches.put(key, future);
         log.info("Async Cache Added: {}", key);
     };
@@ -27,25 +39,26 @@ public class AsyncServiceImpl implements AsyncService {
 
     @Override
     public boolean cancel(String key) {
-        if (!caches.containsKey(key)) {
+        if (!hasAsyncCache(key)) {
             log.info("Async Cache Cancel Failed: {}", key);
             return false;
-        }
-        caches.get(key).cancel(true);
-        log.info("Async Cache Canceled: {}", key);
-
-        removeAsyncCache(key);
+        };
+        CompletableFuture<?> future = getAsyncCache(key);
+        boolean isCanceled = false;
+        if (future != null)
+            isCanceled = future.cancel(true);
+        log.info("Async Cache Canceled: {}, {}", key, isCanceled);
         return true;
     }
 
     private void initAsyncCache(String key, CompletableFuture future) {
         addAsyncCache(key, future);
-        future.thenRun(() -> removeAsyncCache(key));
+        future.whenComplete((r, e) -> removeAsyncCache(key));
     }
 
     @Override
     public String runAsync(Runnable runnable) {
-        CompletableFuture future = CompletableFuture.runAsync(runnable);
+        CompletableFuture future = CompletableFuture.runAsync(runnable, executor);
         String key = System.identityHashCode(future) + "";
         initAsyncCache(key, future);
         return key;
@@ -53,7 +66,14 @@ public class AsyncServiceImpl implements AsyncService {
 
     @Override
     public void runAsync(String key, Runnable runnable) {
-        CompletableFuture future = CompletableFuture.runAsync(runnable);
+        CompletableFuture future = CompletableFuture.runAsync(runnable, executor);
         initAsyncCache(key, future);
+    }
+
+    @Override
+    public void runAsyncWithCancel(String key, Runnable runnable) {
+        if (hasAsyncCache(key))
+            cancel(key);
+        runAsync(key, runnable);
     }
 }
