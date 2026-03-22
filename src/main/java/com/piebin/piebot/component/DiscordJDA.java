@@ -25,15 +25,11 @@ public class DiscordJDA {
     public Optional<Message> getMessageByID(String channelId, String messageId) {
         try {
             Optional<TextChannel> optional = getTextChannelByID(channelId);
-            System.out.println("getTextChannelByID()");
             if (optional.isPresent()) {
-                System.out.println("optional.isPresent()");
                 TextChannel channel = optional.get();
-                System.out.println("optional.get()");
                 return Optional.of(channel.retrieveMessageById(messageId).complete());
             }
         } catch (Exception e) {}
-        System.out.println("optional.empty()()");
         return Optional.empty();
     }
 
