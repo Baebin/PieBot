@@ -1,6 +1,7 @@
 package com.piebin.piebot.controller;
 
 import com.piebin.piebot.component.DiscordBotInfo;
+import com.piebin.piebot.component.DiscordJDA;
 import com.piebin.piebot.listener.CommandListener;
 import com.piebin.piebot.listener.ReactionListener;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class DiscordBotController implements ApplicationRunner {
     private static final String API = "/api/bot/";
 
-    private static JDA jda;
-
     private static boolean status = false;
 
+    private final DiscordJDA discordJDA;
     private final DiscordBotInfo botInfo;
 
     private final CommandListener commandListener;
@@ -34,7 +34,7 @@ public class DiscordBotController implements ApplicationRunner {
     public ResponseEntity<Boolean> run() {
         if (status)
             return ResponseEntity.ok(false);
-        jda = JDABuilder.createDefault(botInfo.getToken())
+        JDA jda = JDABuilder.createDefault(botInfo.getToken())
                 .setActivity(Activity.playing("ㅋ 도움말"))
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT)
                 .addEventListeners(
@@ -42,6 +42,7 @@ public class DiscordBotController implements ApplicationRunner {
                         reactionListener
                 )
                 .build();
+        discordJDA.setJda(jda);
         /*
         jda.updateCommands().addCommands(
                 SlashCommand.TEST.getData()
@@ -57,7 +58,7 @@ public class DiscordBotController implements ApplicationRunner {
     public ResponseEntity<Boolean> stop() {
         if (!status)
             return ResponseEntity.ok(false);
-        jda.shutdown();
+        discordJDA.getJda().shutdown();
         status = false;
         log.info("Discord Bot Stopped");
         return ResponseEntity.ok(true);
