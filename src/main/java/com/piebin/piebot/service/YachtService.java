@@ -17,18 +17,18 @@ public interface YachtService {
     void selectEmoji(MessageReactionAddEvent event);
 
     void select(MessageReceivedEvent event, String type);
-    void selectNumberScore(YachtRoom yachtRoom, int number);
-    void selectBonusScore(YachtRoom yachtRoom);
-    void selectChoiceScore(YachtRoom yachtRoom);
-    void selectFourOfAKindScore(YachtRoom yachtRoom);
-    void selectFullHouseScore(YachtRoom yachtRoom);
-    void selectSmallStraightScore(YachtRoom yachtRoom);
-    void selectLargeStraightScore(YachtRoom yachtRoom);
-    void selectYachtScore(YachtRoom yachtRoom);
+    boolean selectNumberScore(YachtRoom yachtRoom, int number);
+    boolean selectBonusScore(YachtRoom yachtRoom);
+    boolean selectChoiceScore(YachtRoom yachtRoom);
+    boolean selectFourOfAKindScore(YachtRoom yachtRoom);
+    boolean selectFullHouseScore(YachtRoom yachtRoom);
+    boolean selectSmallStraightScore(YachtRoom yachtRoom);
+    boolean selectLargeStraightScore(YachtRoom yachtRoom);
+    boolean selectYachtScore(YachtRoom yachtRoom);
 
-    void selectDice(YachtRoom yachtRoom, int number);
-    void deselectDice(YachtRoom yachtRoom, int number);
-    void rollDices(YachtRoom yachtRoom);
+    boolean selectDice(YachtRoom yachtRoom, int number);
+    boolean deselectDice(YachtRoom yachtRoom, int number);
+    boolean rollDices(YachtRoom yachtRoom);
 
     void invitePVP(MessageReceivedEvent event);
     void createYachtRoom(MessageReactionAddEvent event);

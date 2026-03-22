@@ -33,6 +33,7 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
@@ -63,7 +64,10 @@ public class YachtServiceImpl implements YachtService {
                 "## " + MessageManager.getMention(yachtRoom.getAccount().getId())
                         + " vs " + MessageManager.getMention(yachtRoom.getOpponent().getId())
         );
-        lines.add("> 현재 차례: " + MessageManager.getMention((yachtRoom.getTurnCount() % 2 == 0 ? yachtRoom.getAccount() : yachtRoom.getOpponent()).getId()));
+        lines.add("> 현재 차례: "
+                + MessageManager.getMention((yachtRoom.getTurnCount() % 2 == 0 ? yachtRoom.getAccount() : yachtRoom.getOpponent()).getId())
+                + " **(" + yachtRoom.getRollCount() + "/3)**"
+        );
         lines.add("> *ex) z 1, z 3, z 5, z 포커, z 풀하우스, etc.");
 
         String board = String.join("\n", lines);
@@ -148,8 +152,8 @@ public class YachtServiceImpl implements YachtService {
         YachtRoom yachtRoom = optionalYachtRoom.get();
 
         if (emoji.equals(UniEmoji.RECYCLE.getEmoji())) {
-            rollDices(yachtRoom);
-            editYachtRoomMessage(yachtRoom);
+            if (rollDices(yachtRoom))
+                editYachtRoomMessage(yachtRoom);
         } else if (emoji.equals(UniEmoji.SMALL_RED_TRIANGLE.getEmoji())) {
             yachtRoom.setIsHoldingDice(true);
         } else if (emoji.equals(UniEmoji.SMALL_RED_TRIANGLE_DOWN.getEmoji())) {
@@ -158,9 +162,12 @@ public class YachtServiceImpl implements YachtService {
             int number = EmojiManager.getNumber(emoji);
             if (number < 1 || number > 5)
                 return;
-            if (yachtRoom.getIsHoldingDice())
-                selectDice(yachtRoom, number);
-            else deselectDice(yachtRoom, number);
+            if (yachtRoom.getIsHoldingDice()) {
+                if (!selectDice(yachtRoom, number))
+                    return;
+            }
+            else if (!deselectDice(yachtRoom, number))
+                return;
             editYachtRoomMessage(yachtRoom);
         }
 
@@ -188,16 +195,17 @@ public class YachtServiceImpl implements YachtService {
                 continue;
             log.info("command found: {}", i);
 
-            selectNumberScore(yachtRoom, i);
-            yachtRoom.nextTurn();
+            if (selectNumberScore(yachtRoom, i)) {
+                yachtRoom.nextTurn();
 
-            // Discord Message
-            event.getMessage().delete().queue();
-            editYachtRoomMessage(yachtRoom);
+                // Discord Message
+                event.getMessage().delete().queue();
+                editYachtRoomMessage(yachtRoom);
+            }
             return;
         }
 
-        Map<List<String>, Consumer<YachtRoom>> commandMap = Map.of(
+        Map<List<String>, Predicate<YachtRoom>> commandMap = Map.of(
                 yachtCommandFactory.getChoiceCommands(), this::selectChoiceScore,
                 yachtCommandFactory.getFourOfAKindCommands(), this::selectFourOfAKindScore,
                 yachtCommandFactory.getFullHouseCommands(), this::selectFullHouseScore,
@@ -205,16 +213,17 @@ public class YachtServiceImpl implements YachtService {
                 yachtCommandFactory.getLargeStraightCommands(), this::selectLargeStraightScore,
                 yachtCommandFactory.getYachtCommands(), this::selectYachtScore
         );
-        for (Map.Entry<List<String>, Consumer<YachtRoom>> entry : commandMap.entrySet()) {
+        for (Map.Entry<List<String>, Predicate<YachtRoom>> entry : commandMap.entrySet()) {
             if (entry.getKey().stream().anyMatch(c -> c.equalsIgnoreCase(type))) {
                 log.info("command found: {}", entry.getKey());
 
-                entry.getValue().accept(yachtRoom);
-                yachtRoom.nextTurn();
+                if (entry.getValue().test(yachtRoom)) {
+                    yachtRoom.nextTurn();
 
-                // Discord Message
-                event.getMessage().delete().queue();
-                editYachtRoomMessage(yachtRoom);
+                    // Discord Message
+                    event.getMessage().delete().queue();
+                    editYachtRoomMessage(yachtRoom);
+                }
                 return;
             }
         }
@@ -248,7 +257,7 @@ public class YachtServiceImpl implements YachtService {
 
     @Override
     @Transactional
-    public void selectNumberScore(YachtRoom yachtRoom, int number) {
+    public boolean selectNumberScore(YachtRoom yachtRoom, int number) {
         YachtScoreBoard scoreBoard = getScoreBoard(yachtRoom);
         Map<Integer, Supplier<Integer>> getters = Map.of(
                 1, scoreBoard::getAces,
@@ -267,44 +276,47 @@ public class YachtServiceImpl implements YachtService {
                 6, scoreBoard::setSixes
         );
         if (getters.get(number).get() != null)
-            return;
+            return false;
         setters.get(number).accept(getNumberScore(yachtRoom, number));
         selectBonusScore(yachtRoom);
+        return true;
     }
 
     @Override
     @Transactional
-    public void selectBonusScore(YachtRoom yachtRoom) {
+    public boolean selectBonusScore(YachtRoom yachtRoom) {
         YachtScoreBoard scoreBoard = getScoreBoard(yachtRoom);
         if (scoreBoard.getBonus() != null)
-            return;
+            return false;
         int sum = 0;
         for (Integer score : scoreBoard.getNumberScores()) {
             if (score == null)
-                return;
+                return false;
             sum += score;
         }
         scoreBoard.setBonus(sum >= BONUS_NEED_SCORE ? BONUS_SCORE : 0);
+        return true;
     }
 
     @Override
     @Transactional
-    public void selectChoiceScore(YachtRoom yachtRoom) {
+    public boolean selectChoiceScore(YachtRoom yachtRoom) {
         YachtScoreBoard scoreBoard = getScoreBoard(yachtRoom);
         if (scoreBoard.getChoice() != null)
-            return;
+            return false;
         int score = 0;
         for (int dice : yachtRoom.getDices())
             score += dice;
         scoreBoard.setChoice(score);
+        return true;
     }
 
     @Override
     @Transactional
-    public void selectFourOfAKindScore(YachtRoom yachtRoom) {
+    public boolean selectFourOfAKindScore(YachtRoom yachtRoom) {
         YachtScoreBoard scoreBoard = getScoreBoard(yachtRoom);
         if (scoreBoard.getFourOfAKind() != null)
-            return;
+            return false;
 
         // Score & Count
         Pair<Integer, List<Integer>> p = getSumAndCnts(yachtRoom);
@@ -318,14 +330,15 @@ public class YachtServiceImpl implements YachtService {
             break;
         }
         scoreBoard.setFourOfAKind(hasFourOfAKind ? p.getFirst() : 0);
+        return true;
     }
 
     @Override
     @Transactional
-    public void selectFullHouseScore(YachtRoom yachtRoom) {
+    public boolean selectFullHouseScore(YachtRoom yachtRoom) {
         YachtScoreBoard scoreBoard = getScoreBoard(yachtRoom);
         if (scoreBoard.getFullHouse() != null)
-            return;
+            return false;
 
         // Score & Count
         Pair<Integer, List<Integer>> p = getSumAndCnts(yachtRoom);
@@ -339,14 +352,15 @@ public class YachtServiceImpl implements YachtService {
                 hasThree = true;
         }
         scoreBoard.setFullHouse((hasTwo && hasThree) ? p.component1() : 0);
+        return true;
     }
 
     @Override
     @Transactional
-    public void selectSmallStraightScore(YachtRoom yachtRoom) {
+    public boolean selectSmallStraightScore(YachtRoom yachtRoom) {
         YachtScoreBoard scoreBoard = getScoreBoard(yachtRoom);
         if (scoreBoard.getSmallStraight() != null)
-            return;
+            return false;
 
         // Count
         List<Integer> cnts = getSumAndCnts(yachtRoom).component2();
@@ -358,14 +372,15 @@ public class YachtServiceImpl implements YachtService {
             if (straightCnt >= 4) break;
         }
         scoreBoard.setSmallStraight((straightCnt >= 4) ? SMALL_STRAIGHT_SCORE : 0);
+        return true;
     }
 
     @Override
     @Transactional
-    public void selectLargeStraightScore(YachtRoom yachtRoom) {
+    public boolean selectLargeStraightScore(YachtRoom yachtRoom) {
         YachtScoreBoard scoreBoard = getScoreBoard(yachtRoom);
         if (scoreBoard.getLargeStraight() != null)
-            return;
+            return false;
 
         // Count
         List<Integer> cnts = getSumAndCnts(yachtRoom).component2();
@@ -377,14 +392,15 @@ public class YachtServiceImpl implements YachtService {
             if (straightCnt >= 5) break;
         }
         scoreBoard.setLargeStraight((straightCnt >= 5) ? LARGE_STRAIGHT_SCORE : 0);
+        return true;
     }
 
     @Override
     @Transactional
-    public void selectYachtScore(YachtRoom yachtRoom) {
+    public boolean selectYachtScore(YachtRoom yachtRoom) {
         YachtScoreBoard scoreBoard = getScoreBoard(yachtRoom);
         if (scoreBoard.getYacht() != null)
-            return;
+            return false;
 
         // Count
         List<Integer> cnts = getSumAndCnts(yachtRoom).component2();
@@ -398,36 +414,40 @@ public class YachtServiceImpl implements YachtService {
             break;
         }
         scoreBoard.setYacht(hasYacht ? YACHT_SCORE : 0);
+        return true;
     }
 
     @Override
     @Transactional
-    public void selectDice(YachtRoom yachtRoom, int number) {
+    public boolean selectDice(YachtRoom yachtRoom, int number) {
         if (number > yachtRoom.getNonSelectedDices().size())
-            return;
+            return false;
         yachtRoom.getSelectedDices().add(yachtRoom.getNonSelectedDices().get(number - 1));
         yachtRoom.getNonSelectedDices().remove(number - 1);
+        return true;
     }
 
     @Override
     @Transactional
-    public void deselectDice(YachtRoom yachtRoom, int number) {
+    public boolean deselectDice(YachtRoom yachtRoom, int number) {
         if (number > yachtRoom.getSelectedDices().size())
-            return;
+            return false;
         yachtRoom.getNonSelectedDices().add(yachtRoom.getSelectedDices().get(number - 1));
         yachtRoom.getSelectedDices().remove(number - 1);
+        return true;
     }
 
     @Override
     @Transactional
-    public void rollDices(YachtRoom yachtRoom) {
+    public boolean rollDices(YachtRoom yachtRoom) {
         if (!yachtRoom.canRoll())
-            return;
+            return false;
         yachtRoom.setNonSelectedDices(
                 (yachtRoom.getRollCount() == 0) ?
                         IntStream.range(0, 5).mapToObj(dice -> RandomManager.nextInt(1, 6)).toList()
                         : yachtRoom.getNonSelectedDices().stream().map(dice -> RandomManager.nextInt(1, 6)).toList());
         yachtRoom.increaseRollCount();
+        return true;
     }
 
     @Override
