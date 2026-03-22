@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -126,10 +127,11 @@ public class ReactionServiceImpl implements ReactionService {
             return;
 
         // Remove Emoji
-        User user = event.getUser();
-        MessageReaction reaction = event.getReaction();
-        reaction.removeReaction(user).queue();
-
+        CompletableFuture.runAsync(() -> {
+            User user = event.getUser();
+            MessageReaction reaction = event.getReaction();
+            reaction.removeReaction(user).queue();
+        });
         yachtReactionAdd.executeWithNonEmbed(event);
     }
 }
