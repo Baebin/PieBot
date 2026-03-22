@@ -8,6 +8,7 @@ import com.piebin.piebot.service.ImageService;
 import com.piebin.piebot.service.YachtDrawingService;
 import kotlin.Pair;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -133,9 +134,12 @@ public class YachtDrawingServiceImpl implements YachtDrawingService {
 
     @Override
     @Transactional(readOnly = true)
-    public File getBoard(YachtRoom yachtRoom) throws IOException {
+    public File getBoard(YachtRoom yachtRoom, boolean isNewFile) throws IOException {
         if (yachtRoom.getTurnCount() == 0 && yachtRoom.getRollCount() == 0)
             return imageService.getResourceFile(FILE_PATH, FILE_BOARD, FILE_EXT);
+        File file = imageService.getFile(FILE_PATH, yachtRoom.getIdx() + "", FILE_EXT);
+        if (!isNewFile && file.exists())
+                return file;
         YachtScoreBoard accountScoreBoard = yachtRoom.getAccountScoreBoard();
         YachtScoreBoard opponentScoreBoard = yachtRoom.getOpponentScoreBoard();
 
@@ -188,11 +192,8 @@ public class YachtDrawingServiceImpl implements YachtDrawingService {
         // Rezie
         bufferedImageBoard = resize(bufferedImageBoard, FILE_WIDTH, FILE_HEIGHT);
 
-        // Make File
-        File file = imageService.getFile(FILE_PATH, yachtRoom.getIdx() + "", FILE_EXT);
-        file.mkdirs();
-
         // Save File
+        file.mkdirs();
         ImageIO.write(bufferedImageBoard, FILE_EXT, file);
 
         return file;

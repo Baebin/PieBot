@@ -9,9 +9,11 @@ import com.piebin.piebot.model.entity.UniEmoji;
 import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.model.repository.YachtRepository;
 import com.piebin.piebot.model.repository.YachtRoomRepository;
+import com.piebin.piebot.service.YachtCacheService;
 import com.piebin.piebot.service.YachtDrawingService;
 import com.piebin.piebot.service.YachtService;
 import com.piebin.piebot.utility.*;
+import jakarta.annotation.PostConstruct;
 import kotlin.Pair;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +57,7 @@ public class YachtServiceImpl implements YachtService {
 
     private final YachtCommandFactory yachtCommandFactory;
 
+    private final YachtCacheService yachtCacheService;
     private final YachtDrawingService yachtDrawingService;
 
     @Override
@@ -76,10 +79,10 @@ public class YachtServiceImpl implements YachtService {
 
     @Override
     @Transactional(readOnly = true)
-    public Message sendYachtRoomMessage(MessageChannel channel, YachtRoom yachtRoom) {
+    public Message sendYachtRoomMessage(MessageChannel channel, YachtRoom yachtRoom, boolean isNewFile) {
         FileUpload fileUpload;
         try {
-            fileUpload = FileUpload.fromData(yachtDrawingService.getBoard(yachtRoom));
+            fileUpload = FileUpload.fromData(yachtDrawingService.getBoard(yachtRoom, isNewFile));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -99,7 +102,7 @@ public class YachtServiceImpl implements YachtService {
         CompletableFuture.runAsync(() -> {
             FileUpload fileUpload ;
             try {
-                fileUpload = FileUpload.fromData(yachtDrawingService.getBoard(yachtRoom));
+                fileUpload = FileUpload.fromData(yachtDrawingService.getBoard(yachtRoom, true));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -170,7 +173,6 @@ public class YachtServiceImpl implements YachtService {
                 return;
             editYachtRoomMessage(yachtRoom);
         }
-
     }
 
     @Override
@@ -195,13 +197,12 @@ public class YachtServiceImpl implements YachtService {
                 continue;
             log.info("command found: {}", i);
 
-            if (selectNumberScore(yachtRoom, i)) {
+            if (selectNumberScore(yachtRoom, i))
                 yachtRoom.nextTurn();
 
-                // Discord Message
-                event.getMessage().delete().queue();
-                editYachtRoomMessage(yachtRoom);
-            }
+            // Discord Message
+            event.getMessage().delete().queue();
+            editYachtRoomMessage(yachtRoom);
             return;
         }
 
@@ -217,13 +218,12 @@ public class YachtServiceImpl implements YachtService {
             if (entry.getKey().stream().anyMatch(c -> c.equalsIgnoreCase(type))) {
                 log.info("command found: {}", entry.getKey());
 
-                if (entry.getValue().test(yachtRoom)) {
+                if (entry.getValue().test(yachtRoom))
                     yachtRoom.nextTurn();
 
-                    // Discord Message
-                    event.getMessage().delete().queue();
-                    editYachtRoomMessage(yachtRoom);
-                }
+                // Discord Message
+                event.getMessage().delete().queue();
+                editYachtRoomMessage(yachtRoom);
                 return;
             }
         }
@@ -530,8 +530,11 @@ public class YachtServiceImpl implements YachtService {
                 .build();
         yachtRoomRepository.save(yachtRoom);
 
+        // Cache
+        yachtCacheService.addCache(yachtRoom);
+
         // Set Message Info
-        Message sendMessage = sendYachtRoomMessage(event.getChannel(), yachtRoom);
+        Message sendMessage = sendYachtRoomMessage(event.getChannel(), yachtRoom, true);
         yachtRoom.setChannelId(sendMessage.getChannelId());
         yachtRoom.setMessageId(sendMessage.getId());
     }
@@ -556,6 +559,9 @@ public class YachtServiceImpl implements YachtService {
         addTie(yachtRoom.getOpponent());
 
         yachtRoomRepository.delete(yachtRoom);
+
+        // Cache
+        yachtCacheService.removeCache(yachtRoom);
     }
 
     @Override
@@ -572,7 +578,7 @@ public class YachtServiceImpl implements YachtService {
         }
         YachtRoom yachtRoom = optionalYachtRoom.get();
         // Set Message Info
-        Message sendMessage = sendYachtRoomMessage(event.getChannel(), yachtRoom);
+        Message sendMessage = sendYachtRoomMessage(event.getChannel(), yachtRoom, false);
         yachtRoom.setChannelId(sendMessage.getChannelId());
         yachtRoom.setMessageId(sendMessage.getId());
     }

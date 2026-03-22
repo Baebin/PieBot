@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 public interface YachtService {
     String getBoardString(YachtRoom yachtRoom);
 
-    Message sendYachtRoomMessage(MessageChannel channel, YachtRoom yachtRoom);
+    Message sendYachtRoomMessage(MessageChannel channel, YachtRoom yachtRoom, boolean isNewFile);
     void editYachtRoomMessage(YachtRoom yachtRoom);
 
     void selectEmoji(MessageReactionAddEvent event);

@@ -2,6 +2,7 @@ package com.piebin.piebot.service.impl.commands;
 
 import com.piebin.piebot.model.entity.CommandSentence;
 import com.piebin.piebot.service.PieCommand;
+import com.piebin.piebot.service.YachtCacheService;
 import com.piebin.piebot.service.YachtService;
 import com.piebin.piebot.utility.CommandManager;
 import com.piebin.piebot.utility.EmbedMessageHelper;
@@ -16,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class YachtCommand implements PieCommand {
     private final YachtService yachtService;
+    private final YachtCacheService yachtCacheService;
 
     @Override
     @Transactional
@@ -35,6 +37,8 @@ public class YachtCommand implements PieCommand {
                 return;
             }
         }
+        if (yachtCacheService.hasCache(event.getMessage().getAuthor().getId()))
+            return;
         EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_ARG1);
     }
 }
