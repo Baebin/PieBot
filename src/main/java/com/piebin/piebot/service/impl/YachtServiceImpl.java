@@ -63,7 +63,7 @@ public class YachtServiceImpl implements YachtService {
                 "## " + MessageManager.getMention(yachtRoom.getAccount().getId())
                         + " vs " + MessageManager.getMention(yachtRoom.getOpponent().getId())
         );
-        lines.add("> 현재 차례: " + MessageManager.getMention((yachtRoom.getTurnCount() == 0 ? yachtRoom.getAccount() : yachtRoom.getOpponent()).getId()));
+        lines.add("> 현재 차례: " + MessageManager.getMention((yachtRoom.getTurnCount() % 2 == 0 ? yachtRoom.getAccount() : yachtRoom.getOpponent()).getId()));
         lines.add("> *ex) z 1, z 3, z 5, z 포커, z 풀하우스, etc.");
 
         String board = String.join("\n", lines);
