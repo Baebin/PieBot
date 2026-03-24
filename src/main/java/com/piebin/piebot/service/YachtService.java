@@ -16,6 +16,8 @@ public interface YachtService {
 
     void selectEmoji(MessageReactionAddEvent event);
 
+    void win(YachtRoom yachtRoom);
+
     void select(MessageReceivedEvent event, String type);
     boolean selectNumberScore(YachtRoom yachtRoom, int number);
     boolean selectBonusScore(YachtRoom yachtRoom);

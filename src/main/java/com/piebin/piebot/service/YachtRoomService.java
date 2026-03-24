@@ -1,5 +1,5 @@
 package com.piebin.piebot.service;
 
 public interface YachtRoomService {
-    void updateMessageId(long roomIdx, String messageId);
+    void updateMessageInfo(long roomIdx, String channelId, String messageId);
 }

@@ -3,6 +3,7 @@ package com.piebin.piebot.service.impl;
 import com.piebin.piebot.component.DiscordJDA;
 import com.piebin.piebot.factory.YachtCommandFactory;
 import com.piebin.piebot.model.domain.*;
+import com.piebin.piebot.model.dto.embed.EmbedDto;
 import com.piebin.piebot.model.entity.CommandSentence;
 import com.piebin.piebot.model.entity.EmbedSentence;
 import com.piebin.piebot.model.entity.UniEmoji;
@@ -11,7 +12,6 @@ import com.piebin.piebot.model.repository.YachtRepository;
 import com.piebin.piebot.model.repository.YachtRoomRepository;
 import com.piebin.piebot.service.*;
 import com.piebin.piebot.utility.*;
-import com.piebin.piebot.utility.impl.EmbedMessageHelperImpl;
 import kotlin.Pair;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +57,8 @@ public class YachtServiceImpl implements YachtService {
     private final YachtCacheService yachtCacheService;
     private final YachtDrawingService yachtDrawingService;
 
+    private final TaskSchedulerService taskSchedulerService;
+
     private final YachtCommandFactory yachtCommandFactory;
 
     private final EmbedMessageHelper embedMessageHelper;
@@ -88,7 +90,7 @@ public class YachtServiceImpl implements YachtService {
             throw new RuntimeException(e);
         }
         channel.sendMessage(getBoardString(yachtRoom)).setFiles(fileUpload).queue((message) -> {
-            yachtRoomService.updateMessageId(yachtRoom.getIdx(), message.getId());
+            yachtRoomService.updateMessageInfo(yachtRoom.getIdx(), message.getChannelId(), message.getId());
             message.addReaction(UniEmoji.SMALL_RED_TRIANGLE.getEmoji()).queue();
             message.addReaction(UniEmoji.SMALL_RED_TRIANGLE_DOWN.getEmoji()).queue();
             message.addReaction(UniEmoji.RECYCLE.getEmoji()).queue();
@@ -176,6 +178,49 @@ public class YachtServiceImpl implements YachtService {
 
     @Override
     @Transactional
+    public void win(YachtRoom yachtRoom) {
+        if (yachtRoom.getTurnCount() < 24)
+            return;
+        int accountScore = yachtRoom.getAccountScoreBoard().getTotalScores();
+        int opponentScore = yachtRoom.getOpponentScoreBoard().getTotalScores();
+
+        Account account = yachtRoom.getAccount();
+        Account opponent = yachtRoom.getOpponent();
+
+        int result = (accountScore == opponentScore ? 0 : (accountScore > opponentScore) ? 1 : -1);
+
+        discordJDA.retrieveMessageByID(yachtRoom.getChannelId(), yachtRoom.getMessageId(), (message) -> {
+            EmbedDto dto;
+            if (result == 0) {
+                dto = new EmbedDto(EmbedSentence.YACHT_PVP_WIN, Color.GREEN);
+                dto.changeMessage(result == 1 ? account.getName() : opponent.getName());
+            }
+            else {
+                dto = new EmbedDto(EmbedSentence.YACHT_PVP_TIE, Color.GREEN);
+                dto.changeMessage(account.getName(), opponent.getName());
+            }
+            embedMessageHelper.replyEmbedMessage(message, dto);
+        });
+
+        if (result == 0) {
+            addTie(account);
+            addTie(opponent);
+        } else {
+            addWin((result == 1) ? account : opponent);
+            addLose((result == 1) ? opponent : account);
+        }
+
+        // Cache
+        taskSchedulerService.runAfterSeconds(() -> {
+            yachtCacheService.removeCache(yachtRoom);
+        }, 1);
+
+        // Room
+        yachtRoomRepository.delete(yachtRoom);;
+    }
+
+    @Override
+    @Transactional
     public void select(MessageReceivedEvent event, String type) {
         String id = event.getAuthor().getId();
         log.info("id: {}, type: {}", id, type);
@@ -196,12 +241,16 @@ public class YachtServiceImpl implements YachtService {
                 continue;
             log.info("command found: {}", i);
 
-            if (selectNumberScore(yachtRoom, i))
+            if (selectNumberScore(yachtRoom, i)) {
                 yachtRoom.nextTurn();
+                editYachtRoomMessage(yachtRoom);
+
+                // Win Check
+                win(yachtRoom);
+            }
 
             // Discord Message
             event.getMessage().delete().queue();
-            editYachtRoomMessage(yachtRoom);
             return;
         }
 
@@ -217,12 +266,16 @@ public class YachtServiceImpl implements YachtService {
             if (entry.getKey().stream().anyMatch(c -> c.equalsIgnoreCase(type))) {
                 log.info("command found: {}", entry.getKey());
 
-                if (entry.getValue().test(yachtRoom))
+                if (entry.getValue().test(yachtRoom)) {
                     yachtRoom.nextTurn();
+                    editYachtRoomMessage(yachtRoom);
+
+                    // Win Check
+                    win(yachtRoom);
+                }
 
                 // Discord Message
                 event.getMessage().delete().queue();
-                editYachtRoomMessage(yachtRoom);
                 return;
             }
         }

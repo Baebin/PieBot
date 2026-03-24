@@ -16,11 +16,12 @@ public class YachtRoomServiceImpl implements YachtRoomService {
 
     @Override
     @Transactional
-    public void updateMessageId(long roomIdx, String messageId) {
+    public void updateMessageInfo(long roomIdx, String channelId, String messageId) {
         Optional<YachtRoom> optionalYachtRoom = YachtRoomRepository.findByIdx(roomIdx);
         if (optionalYachtRoom.isEmpty())
             return;
         YachtRoom yachtRoom = optionalYachtRoom.get();
+        yachtRoom.setChannelId(channelId);
         yachtRoom.setMessageId(messageId);
     }
 }
