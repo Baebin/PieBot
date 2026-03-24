@@ -9,6 +9,7 @@ import com.piebin.piebot.model.repository.AttendanceRepository;
 import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.utility.DateTimeManager;
 import com.piebin.piebot.utility.EmbedMessageHelper;
+import com.piebin.piebot.utility.impl.EmbedMessageHelperImpl;
 import com.piebin.piebot.utility.NumberManager;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -28,6 +29,8 @@ public class RewardCommand implements PieCommand {
 
     private final AccountRepository accountRepository;
     private final AttendanceRepository attendanceRepository;
+
+    private final EmbedMessageHelper embedMessageHelper;
 
     @Override
     @Transactional
@@ -50,7 +53,7 @@ public class RewardCommand implements PieCommand {
             if (DateTimeManager.hasWaitingMinutes(attendance.getRewardDateTime(), MINUTES)) {
                 EmbedDto dto = new EmbedDto(CommandSentence.REWARD_WAITING, Color.RED);
                 dto.changeDescription(NumberManager.getNumber(MINUTES));
-                EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+                embedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
                 return;
             }
             attendance.setRewardCount(attendance.getRewardCount() + 1);
@@ -62,6 +65,6 @@ public class RewardCommand implements PieCommand {
         EmbedDto dto = new EmbedDto(CommandSentence.REWARD_COMPLETED, Color.GREEN);
         dto.changeMessage(NumberManager.getNumber(reward));
         dto.changeDescription(NumberManager.getNumber(account.getMoney()));
-        EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+        embedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
     }
 }

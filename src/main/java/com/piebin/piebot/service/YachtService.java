@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 public interface YachtService {
     String getBoardString(YachtRoom yachtRoom);
 
-    Message sendYachtRoomMessage(MessageChannel channel, YachtRoom yachtRoom, boolean isNewFile);
+    void sendYachtRoomMessage(MessageChannel channel, YachtRoom yachtRoom, boolean isNewFile);
     void editYachtRoomMessage(YachtRoom yachtRoom);
 
     void selectEmoji(MessageReactionAddEvent event);
@@ -31,7 +31,7 @@ public interface YachtService {
     boolean rollDices(YachtRoom yachtRoom);
 
     void invitePVP(MessageReceivedEvent event);
-    void createYachtRoom(MessageReactionAddEvent event);
+    void createYachtRoom(MessageReactionAddEvent event, Message message);
     void quitYachtRoom(MessageReceivedEvent event);
     void continueYachtRoom(MessageReceivedEvent event);
 

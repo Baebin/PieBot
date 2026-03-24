@@ -9,12 +9,9 @@ import com.piebin.piebot.model.entity.UniEmoji;
 import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.model.repository.YachtRepository;
 import com.piebin.piebot.model.repository.YachtRoomRepository;
-import com.piebin.piebot.service.AsyncService;
-import com.piebin.piebot.service.YachtCacheService;
-import com.piebin.piebot.service.YachtDrawingService;
-import com.piebin.piebot.service.YachtService;
+import com.piebin.piebot.service.*;
 import com.piebin.piebot.utility.*;
-import jakarta.annotation.PostConstruct;
+import com.piebin.piebot.utility.impl.EmbedMessageHelperImpl;
 import kotlin.Pair;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +31,6 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -56,11 +52,14 @@ public class YachtServiceImpl implements YachtService {
     private final YachtRepository yachtRepository;
     private final YachtRoomRepository yachtRoomRepository;
 
-    private final YachtCommandFactory yachtCommandFactory;
-
     private final AsyncService asyncService;
+    private final YachtRoomService yachtRoomService;
     private final YachtCacheService yachtCacheService;
     private final YachtDrawingService yachtDrawingService;
+
+    private final YachtCommandFactory yachtCommandFactory;
+
+    private final EmbedMessageHelper embedMessageHelper;
 
     @Override
     public String getBoardString(YachtRoom yachtRoom) {
@@ -81,21 +80,21 @@ public class YachtServiceImpl implements YachtService {
 
     @Override
     @Transactional(readOnly = true)
-    public Message sendYachtRoomMessage(MessageChannel channel, YachtRoom yachtRoom, boolean isNewFile) {
+    public void sendYachtRoomMessage(MessageChannel channel, YachtRoom yachtRoom, boolean isNewFile) {
         FileUpload fileUpload;
         try {
             fileUpload = FileUpload.fromData(yachtDrawingService.getBoard(yachtRoom, isNewFile));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        Message message = channel.sendMessage(getBoardString(yachtRoom)).setFiles(fileUpload).complete();
-
-        message.addReaction(UniEmoji.SMALL_RED_TRIANGLE.getEmoji()).complete();
-        message.addReaction(UniEmoji.SMALL_RED_TRIANGLE_DOWN.getEmoji()).complete();
-        message.addReaction(UniEmoji.RECYCLE.getEmoji()).complete();
-        for (int i = 1; i <= 5; i++)
-            message.addReaction(EmojiManager.getEmoji(i)).complete();
-        return message;
+        channel.sendMessage(getBoardString(yachtRoom)).setFiles(fileUpload).queue((message) -> {
+            yachtRoomService.updateMessageId(yachtRoom.getIdx(), message.getId());
+            message.addReaction(UniEmoji.SMALL_RED_TRIANGLE.getEmoji()).queue();
+            message.addReaction(UniEmoji.SMALL_RED_TRIANGLE_DOWN.getEmoji()).queue();
+            message.addReaction(UniEmoji.RECYCLE.getEmoji()).queue();
+            for (int i = 1; i <= 5; i++)
+                message.addReaction(EmojiManager.getEmoji(i)).queue();
+        });
     }
 
     @Override
@@ -109,11 +108,9 @@ public class YachtServiceImpl implements YachtService {
                 throw new RuntimeException(e);
             }
 
-            Optional<Message> optionalMessage = discordJDA.getMessageByID(yachtRoom.getChannelId(), yachtRoom.getMessageId());
-            if (optionalMessage.isEmpty())
-                return;
-            Message message = optionalMessage.get();
-            message.editMessage(getBoardString(yachtRoom)).setFiles(fileUpload).complete();
+            discordJDA.retrieveMessageByID(yachtRoom.getChannelId(), yachtRoom.getMessageId(), (message) -> {
+                message.editMessage(getBoardString(yachtRoom)).setFiles(fileUpload).queue();
+            });
         });
     }
 
@@ -459,7 +456,7 @@ public class YachtServiceImpl implements YachtService {
         if (args.size() >= 4) {
             String userId = CommandManager.getMentionId(args.get(3));
             if (event.getAuthor().getId().equals(userId)) {
-                EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_PVP_SELF);
+                embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_PVP_SELF);
                 return;
             }
             Optional<Account> optionalFrom = accountRepository.findById(event.getAuthor().getId());
@@ -468,33 +465,31 @@ public class YachtServiceImpl implements YachtService {
                 Account from = optionalFrom.get();
                 boolean existsFrom = yachtRoomRepository.existsByAccountOrOpponent(from, from);
                 if (existsFrom) {
-                    EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_PVP_EXISTS_FROM);
+                    embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_PVP_EXISTS_FROM);
                     return;
                 }
                 Account to = optionalTo.get();
                 boolean existsTo = yachtRoomRepository.existsByAccountOrOpponent(to, to);
                 if (existsTo) {
-                    EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_PVP_EXISTS_TO);
+                    embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_PVP_EXISTS_TO);
                     return;
                 }
-                Message message = EmbedMessageHelper.replyCommandMessage(event.getMessage(), CommandSentence.YACHT_PVP, Color.GREEN);
-                message.addReaction(UniEmoji.CHECK.getEmoji()).queue();
+                embedMessageHelper.replyCommandMessage(event.getMessage(), CommandSentence.YACHT_PVP, Color.GREEN, (embed) -> {
+                    embed.addReaction(UniEmoji.CHECK.getEmoji()).queue();
+                });
                 return;
             }
         }
-        EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_PVP_ARG2);
+        embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_PVP_ARG2);
     }
 
     @Override
     @Transactional
-    public void createYachtRoom(MessageReactionAddEvent event) {
+    public void createYachtRoom(MessageReactionAddEvent event, Message message) {
         User user = event.getUser();
         MessageReaction reaction = event.getReaction();
         reaction.removeReaction(user).queue();
 
-        Message message = ReactionManager.getMessage(event);
-        if (message == null)
-            return;
         Message rMessage = message.getReferencedMessage();
         if (rMessage == null)
             return;
@@ -509,20 +504,20 @@ public class YachtServiceImpl implements YachtService {
         Account from = optionalFrom.get();
         boolean existsFrom = yachtRoomRepository.existsByAccountOrOpponent(from, from);
         if (existsFrom) {
-            MessageEmbed embed = EmbedMessageHelper.getEmbedBuilder(CommandSentence.YACHT_PVP_EXISTS_TO, Color.RED).build();
+            MessageEmbed embed = embedMessageHelper.getEmbedBuilder(CommandSentence.YACHT_PVP_EXISTS_TO, Color.RED).build();
             message.editMessageEmbeds(embed).queue();
             return;
         }
         Account to = optionalTo.get();
         boolean existsTo = yachtRoomRepository.existsByAccountOrOpponent(to, to);
         if (existsTo) {
-            MessageEmbed embed = EmbedMessageHelper.getEmbedBuilder(CommandSentence.YACHT_PVP_EXISTS_FROM, Color.RED).build();
+            MessageEmbed embed = embedMessageHelper.getEmbedBuilder(CommandSentence.YACHT_PVP_EXISTS_FROM, Color.RED).build();
             message.editMessageEmbeds(embed).queue();
             return;
         }
 
         // Accepted Message
-        MessageEmbed embed = EmbedMessageHelper.getEmbedBuilder(EmbedSentence.YACHT_PVP_STARTED, Color.GREEN).build();
+        MessageEmbed embed = embedMessageHelper.getEmbedBuilder(EmbedSentence.YACHT_PVP_STARTED, Color.GREEN).build();
         message.editMessageEmbeds(embed).queue();
 
         // Create Game Room
@@ -535,10 +530,8 @@ public class YachtServiceImpl implements YachtService {
         // Cache
         yachtCacheService.addCache(yachtRoom);
 
-        // Set Message Info
-        Message sendMessage = sendYachtRoomMessage(event.getChannel(), yachtRoom, true);
-        yachtRoom.setChannelId(sendMessage.getChannelId());
-        yachtRoom.setMessageId(sendMessage.getId());
+        // Discord Message
+        sendYachtRoomMessage(event.getChannel(), yachtRoom, true);
     }
 
 
@@ -551,11 +544,11 @@ public class YachtServiceImpl implements YachtService {
         Account account = optionalAccount.get();
         Optional<YachtRoom> optionalYachtRoom = yachtRoomRepository.findByAccountOrOpponent(account, account);
         if (optionalYachtRoom.isEmpty()) {
-            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_QUIT_NONE);
+            embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_QUIT_NONE);
             return;
         }
         YachtRoom yachtRoom = optionalYachtRoom.get();
-        EmbedMessageHelper.replyCommandMessage(event.getMessage(), CommandSentence.YACHT_QUIT, Color.GREEN);
+        embedMessageHelper.replyCommandMessage(event.getMessage(), CommandSentence.YACHT_QUIT, Color.GREEN);
 
         addTie(yachtRoom.getAccount());
         addTie(yachtRoom.getOpponent());
@@ -575,14 +568,12 @@ public class YachtServiceImpl implements YachtService {
         Account account = optionalAccount.get();
         Optional<YachtRoom> optionalYachtRoom = yachtRoomRepository.findByAccountOrOpponent(account, account);
         if (optionalYachtRoom.isEmpty()) {
-            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_CONTINUE_NONE);
+            embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_CONTINUE_NONE);
             return;
         }
         YachtRoom yachtRoom = optionalYachtRoom.get();
-        // Set Message Info
-        Message sendMessage = sendYachtRoomMessage(event.getChannel(), yachtRoom, false);
-        yachtRoom.setChannelId(sendMessage.getChannelId());
-        yachtRoom.setMessageId(sendMessage.getId());
+        // Discrod Message
+        sendYachtRoomMessage(event.getChannel(), yachtRoom, false);
     }
 
     @Override

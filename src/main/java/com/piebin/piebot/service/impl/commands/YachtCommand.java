@@ -6,6 +6,7 @@ import com.piebin.piebot.service.YachtCacheService;
 import com.piebin.piebot.service.YachtService;
 import com.piebin.piebot.utility.CommandManager;
 import com.piebin.piebot.utility.EmbedMessageHelper;
+import com.piebin.piebot.utility.impl.EmbedMessageHelperImpl;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,8 @@ import java.util.List;
 public class YachtCommand implements PieCommand {
     private final YachtService yachtService;
     private final YachtCacheService yachtCacheService;
+
+    private final EmbedMessageHelper embedMessageHelper;
 
     @Override
     @Transactional
@@ -39,6 +42,6 @@ public class YachtCommand implements PieCommand {
         }
         if (yachtCacheService.hasCache(event.getMessage().getAuthor().getId()))
             return;
-        EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_ARG1);
+        embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_ARG1);
     }
 }

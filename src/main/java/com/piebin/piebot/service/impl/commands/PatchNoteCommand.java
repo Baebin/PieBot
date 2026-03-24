@@ -40,13 +40,13 @@ public class PatchNoteCommand implements PieCommand, PageService {
         }
 
         TextChannel channel = event.getChannel().asTextChannel();
-        Message message = channel.sendMessageEmbeds(getPage(initPage).build()).complete();
-
-        message.addReaction(UniEmoji.ARROW_LEFT_DOUBLE.getEmoji()).queue();
-        message.addReaction(UniEmoji.ARROW_LEFT.getEmoji()).queue();
-        message.addReaction(UniEmoji.ARROW_REFRESH.getEmoji()).queue();
-        message.addReaction(UniEmoji.ARROW_RIGHT.getEmoji()).queue();
-        message.addReaction(UniEmoji.ARROW_RIGHT_DOUBLE.getEmoji()).queue();
+        channel.sendMessageEmbeds(getPage(initPage).build()).queue((message) -> {
+            message.addReaction(UniEmoji.ARROW_LEFT_DOUBLE.getEmoji()).queue();
+            message.addReaction(UniEmoji.ARROW_LEFT.getEmoji()).queue();
+            message.addReaction(UniEmoji.ARROW_REFRESH.getEmoji()).queue();
+            message.addReaction(UniEmoji.ARROW_RIGHT.getEmoji()).queue();
+            message.addReaction(UniEmoji.ARROW_RIGHT_DOUBLE.getEmoji()).queue();
+        });
     }
 
     private void addField(EmbedBuilder embedBuilder, PatchNote patchNote) {

@@ -11,5 +11,6 @@ import java.util.Optional;
 public interface OmokRoomRepository extends JpaRepository<OmokRoom, Long> {
     boolean existsByAccountOrOpponent(Account account, Account opponent);
 
+    Optional<OmokRoom> findByIdx(Long idx);
     Optional<OmokRoom> findByAccountOrOpponent(Account account, Account opponent);
 }

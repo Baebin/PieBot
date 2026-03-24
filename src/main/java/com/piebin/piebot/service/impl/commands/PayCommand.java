@@ -7,6 +7,7 @@ import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.utility.CommandManager;
 import com.piebin.piebot.utility.EmbedMessageHelper;
+import com.piebin.piebot.utility.impl.EmbedMessageHelperImpl;
 import com.piebin.piebot.utility.NumberManager;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -22,6 +23,8 @@ import java.util.Optional;
 public class PayCommand implements PieCommand {
     private final AccountRepository accountRepository;
 
+    private final EmbedMessageHelper embedMessageHelper;
+
     @Override
     @Transactional
     public void execute(MessageReceivedEvent event) {
@@ -30,7 +33,7 @@ public class PayCommand implements PieCommand {
         if (args.size() >= 3) {
             String userId = CommandManager.getMentionId(args.get(2));
             if (event.getAuthor().getId().equals(userId)) {
-                EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.PAY_ARG1_SELF);
+                embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.PAY_ARG1_SELF);
                 return;
             }
             Optional<Account> optionalFrom = accountRepository.findById(event.getAuthor().getId());
@@ -50,18 +53,18 @@ public class PayCommand implements PieCommand {
 
                                 EmbedDto dto = new EmbedDto(CommandSentence.PAY_COMPLETED, Color.GREEN);
                                 dto.changeMessage(NumberManager.getNumber(money));
-                                EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+                                embedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
                                 return;
                             }
-                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.PAY_ARG2_LESS);
+                            embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.PAY_ARG2_LESS);
                             return;
                         }
                     } catch (Exception e) {}
                 }
-                EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.PAY_ARG2_MIN);
+                embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.PAY_ARG2_MIN);
                 return;
             }
         }
-        EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.PAY_ARG1);
+        embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.PAY_ARG1);
     }
 }

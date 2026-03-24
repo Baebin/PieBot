@@ -7,6 +7,7 @@ import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.utility.DateTimeManager;
 import com.piebin.piebot.utility.EmbedMessageHelper;
+import com.piebin.piebot.utility.impl.EmbedMessageHelperImpl;
 import com.piebin.piebot.utility.MessageManager;
 import com.piebin.piebot.utility.NumberManager;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ProfileCommand implements PieCommand {
     private final AccountRepository accountRepository;
+
+    private final EmbedMessageHelper embedMessageHelper;
 
     private EmbedBuilder getProfile(Account account) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -49,6 +52,6 @@ public class ProfileCommand implements PieCommand {
             event.getMessage().replyFiles(fileUpload)
                     .setEmbeds(getProfile(account).build())
                     .queue();
-        } else EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.PROFILE_NOT_FOUND, Color.RED);
+        } else embedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.PROFILE_NOT_FOUND, Color.RED);
     }
 }

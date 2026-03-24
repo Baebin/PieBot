@@ -80,10 +80,10 @@ public class EasterEggListCommand implements PieCommand, PageService {
             initPage = PageManager.getPage(totalCnt, 15, args.get(2));
 
         TextChannel channel = event.getChannel().asTextChannel();
-        Message message = channel.sendMessageEmbeds(getPage(initPage).build()).complete();
-
-        int pages = PageManager.getPages(totalCnt, 15);
-        for (int i = 1; i <= pages; i++)
-            message.addReaction(EmojiManager.getEmoji(i)).queue();
+        channel.sendMessageEmbeds(getPage(initPage).build()).queue((embed) -> {
+            int pages = PageManager.getPages(totalCnt, 15);
+            for (int i = 1; i <= pages; i++)
+                embed.addReaction(EmojiManager.getEmoji(i)).queue();
+        });
     }
 }

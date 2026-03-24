@@ -10,7 +10,7 @@ import com.piebin.piebot.model.entity.Sentence;
 import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.model.repository.InventoryRepository;
 import com.piebin.piebot.service.PieCommand;
-import com.piebin.piebot.utility.EmbedMessageHelper;
+import com.piebin.piebot.utility.impl.EmbedMessageHelperImpl;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -26,6 +26,8 @@ import java.util.List;
 public class InventoryCommand implements PieCommand {
     private final AccountRepository accountRepository;
     private final InventoryRepository inventoryRepository;
+
+    private final EmbedMessageHelperImpl embedMessageHelper;
 
     @Override
     @Transactional(readOnly = true)
@@ -60,17 +62,17 @@ public class InventoryCommand implements PieCommand {
         } catch (AccountException e) {
             switch (e.getErrorCode()) {
                 case NOT_FOUND:
-                    EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.PROFILE_NOT_FOUND, Color.RED);
+                    embedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.PROFILE_NOT_FOUND, Color.RED);
                     break;
                 case INVENTORY_NOT_FOUND:
-                    EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.INVENTORY_NOT_FOUND, Color.RED);
+                    embedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.INVENTORY_NOT_FOUND, Color.RED);
                     break;
                 default:
-                    EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.SYSTEM_ERROR, Color.RED);
+                    embedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.SYSTEM_ERROR, Color.RED);
                     break;
             };
         } catch (Exception e) {
-            EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.SYSTEM_ERROR, Color.RED);
+            embedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.SYSTEM_ERROR, Color.RED);
         }
     }
 }

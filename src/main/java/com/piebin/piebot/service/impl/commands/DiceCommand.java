@@ -5,6 +5,7 @@ import com.piebin.piebot.model.entity.Sentence;
 import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.utility.CommandManager;
 import com.piebin.piebot.utility.EmbedMessageHelper;
+import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,10 @@ import java.util.List;
 import java.util.Random;
 
 @Service
+@RequiredArgsConstructor
 public class DiceCommand implements PieCommand {
+    private final EmbedMessageHelper embedMessageHelper;
+
     @Override
     public void execute(MessageReceivedEvent event) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -32,6 +36,6 @@ public class DiceCommand implements PieCommand {
                 }
             } catch (Exception e) {}
         }
-        EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.DICE_ARG1);
+        embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.DICE_ARG1);
     }
 }

@@ -4,15 +4,19 @@ import com.piebin.piebot.model.domain.*;
 import com.piebin.piebot.model.dto.embed.EmbedDto;
 import com.piebin.piebot.model.entity.*;
 import com.piebin.piebot.model.repository.*;
+import com.piebin.piebot.service.OmokRoomService;
 import com.piebin.piebot.service.OmokSkinService;
 import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.service.OmokService;
 import com.piebin.piebot.utility.*;
+import com.piebin.piebot.utility.impl.EmbedMessageHelperImpl;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.utils.FileUpload;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,8 +41,11 @@ public class OmokCommand implements PieCommand, OmokService {
     private final OmokInfoRepository omokInfoRepository;
 
     private final OmokSkinService omokSkinService;
+    private final OmokRoomService omokRoomService;
 
     private final OmokRankCommand omokRankCommand;
+
+    private final EmbedMessageHelper embedMessageHelper;
 
     @Override
     @Transactional
@@ -81,7 +88,7 @@ public class OmokCommand implements PieCommand, OmokService {
                 if (args.size() >= 4) {
                     String userId = CommandManager.getMentionId(args.get(3));
                     if (event.getAuthor().getId().equals(userId)) {
-                        EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_PVP_SELF);
+                        embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_PVP_SELF);
                         return;
                     }
                     Optional<Account> optionalFrom = accountRepository.findById(event.getAuthor().getId());
@@ -90,21 +97,22 @@ public class OmokCommand implements PieCommand, OmokService {
                         Account from = optionalFrom.get();
                         boolean existsFrom = omokRoomRepository.existsByAccountOrOpponent(from, from);
                         if (existsFrom) {
-                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_PVP_EXISTS_FROM);
+                            embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_PVP_EXISTS_FROM);
                             return;
                         }
                         Account to = optionalTo.get();
                         boolean existsTo = omokRoomRepository.existsByAccountOrOpponent(to, to);
                         if (existsTo) {
-                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_PVP_EXISTS_TO);
+                            embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_PVP_EXISTS_TO);
                             return;
                         }
-                        Message message = EmbedMessageHelper.replyCommandMessage(event.getMessage(), CommandSentence.OMOK_PVP, Color.GREEN);
-                        message.addReaction(UniEmoji.CHECK.getEmoji()).queue();
+                        embedMessageHelper.replyCommandMessage(event.getMessage(), CommandSentence.OMOK_PVP, Color.GREEN, (embed) -> {
+                            embed.addReaction(UniEmoji.CHECK.getEmoji()).queue();
+                        });
                         return;
                     }
                 }
-                EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_PVP_ARG2);
+                embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_PVP_ARG2);
                 return;
             }
             else if (args.get(2).equals("퇴장") || args.get(2).equalsIgnoreCase("quit")) {
@@ -114,11 +122,11 @@ public class OmokCommand implements PieCommand, OmokService {
                 Account account = optionalAccount.get();
                 Optional<OmokRoom> optionalOmokRoom = omokRoomRepository.findByAccountOrOpponent(account, account);
                 if (optionalOmokRoom.isEmpty()) {
-                    EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_QUIT_NONE);
+                    embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_QUIT_NONE);
                     return;
                 }
                 OmokRoom omokRoom = optionalOmokRoom.get();
-                EmbedMessageHelper.replyCommandMessage(event.getMessage(), CommandSentence.OMOK_QUIT, Color.GREEN);
+                embedMessageHelper.replyCommandMessage(event.getMessage(), CommandSentence.OMOK_QUIT, Color.GREEN);
 
                 addTie(omokRoom.getAccount());
                 addTie(omokRoom.getOpponent());
@@ -141,7 +149,7 @@ public class OmokCommand implements PieCommand, OmokService {
                     event.getMessage().replyFiles(fileUpload)
                             .setEmbeds(getProfile(account).build())
                             .queue();
-                } else EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.PROFILE_NOT_FOUND, Color.RED);
+                } else embedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.PROFILE_NOT_FOUND, Color.RED);
                 return;
             }
             else if (args.get(2).equals("이어하기") || args.get(2).equalsIgnoreCase("continue")) {
@@ -151,58 +159,56 @@ public class OmokCommand implements PieCommand, OmokService {
                 Account account = optionalAccount.get();
                 Optional<OmokRoom> optionalOmokRoom = omokRoomRepository.findByAccountOrOpponent(account, account);
                 if (optionalOmokRoom.isEmpty()) {
-                    EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_CONTINUE_NONE);
+                    embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_CONTINUE_NONE);
                     return;
                 }
                 OmokRoom omokRoom = optionalOmokRoom.get();
                 String board = createBoard(omokRoom);
-                Message boardMessage;
                 if (omokRoom.getOmokSkin() != null) {
                     FileUpload fileUpload = FileUpload.fromData(omokSkinService.getBoard(omokRoom));
-                    boardMessage = event.getChannel().sendMessage(board).setFiles(fileUpload).complete();
-                } else boardMessage = event.getChannel().sendMessage(board).complete();
-                omokRoom.setMessageId(boardMessage.getId());
+                    event.getChannel().sendMessage(board).setFiles(fileUpload).queue(boardMessage -> omokRoomService.updateMessageId(omokRoom.getIdx(), boardMessage.getId()));
+                } else event.getChannel().sendMessage(board).queue(boardMessage -> omokRoomService.updateMessageId(omokRoom.getIdx(), boardMessage.getId()));
                 return;
             }
             else if (args.get(2).equals("스킨") || args.get(2).equalsIgnoreCase("skin")) {
                 Optional<Account> optionalAccount = accountRepository.findById(event.getAuthor().getId());
                 if (optionalAccount.isEmpty()) {
-                    EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.PROFILE_NOT_FOUND, Color.RED);
+                    embedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.PROFILE_NOT_FOUND, Color.RED);
                     return;
                 }
                 Optional<Inventory> optionalInventory = inventoryRepository.findByAccount(optionalAccount.get());
                 if (optionalInventory.isEmpty()) {
-                    EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.INVENTORY_NOT_FOUND, Color.RED);
+                    embedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.INVENTORY_NOT_FOUND, Color.RED);
                     return;
                 }
                 Account account = optionalAccount.get();
                 Optional<Omok> optionalOmok = omokRepository.findByAccount(account);
                 if (optionalOmok.isEmpty()) {
-                    EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_NOT_FOUND);
+                    embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_NOT_FOUND);
                     return;
                 }
                 Omok omok = optionalOmok.get();
                 if (args.size() >= 4) {
                     if (args.get(3).equals("해제")) {
                         if (omok.getOmokSkin() == null) {
-                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_SKIN_ALREADY_REMOVED);
+                            embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_SKIN_ALREADY_REMOVED);
                             return;
                         }
                         EmbedDto dto = new EmbedDto(CommandSentence.OMOK_SKIN_REMOVED, Color.GREEN);
                         dto.changeDescription(omok.getOmokSkin().name());
-                        EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+                        embedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
 
                         omok.setOmokSkin(null);
                         return;
                     } else if (args.get(3).equalsIgnoreCase(OmokSkin.AURORA.name())) {
                         Inventory inventory = optionalInventory.get();
                         if (!inventory.hasOmokSkin(OmokSkin.AURORA)) {
-                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_SKIN_NONE);
+                            embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_SKIN_NONE);
                             return;
                         }
                         EmbedDto dto = new EmbedDto(CommandSentence.OMOK_SKIN_SELECTED, Color.GREEN);
                         dto.changeDescription(OmokSkin.AURORA.name());
-                        EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+                        embedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
 
                         omok.setOmokSkin(OmokSkin.AURORA);
                         return;
@@ -217,11 +223,11 @@ public class OmokCommand implements PieCommand, OmokService {
                         omok.getOmokSkin() == null ? "없음" : omok.getOmokSkin().name(),
                         skins.isEmpty() ? "없음" : String.join(",", skins)
                 );
-                EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+                embedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
                 return;
             }
         }
-        EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_ARG1);
+        embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.OMOK_ARG1);
     }
 
     @Override
@@ -265,6 +271,53 @@ public class OmokCommand implements PieCommand, OmokService {
 
         String board = String.join("\n", lines);
         return board;
+    }
+
+    @Override
+    @Transactional
+    public void createOmokRoom(MessageReactionAddEvent event, Message message) {
+        Message rMessage = message.getReferencedMessage();
+        if (rMessage == null)
+            return;
+        if (!rMessage.getMentions().isMentioned(event.getUser()))
+            return;
+
+        Optional<Account> optionalFrom = accountRepository.findById(rMessage.getAuthor().getId());
+        Optional<Account> optionalTo = accountRepository.findById(event.getUserId());
+        if (optionalFrom.isEmpty() || optionalTo.isEmpty())
+            return;
+
+        Account from = optionalFrom.get();
+        boolean existsFrom = omokRoomRepository.existsByAccountOrOpponent(from, from);
+        if (existsFrom) {
+            MessageEmbed embed = embedMessageHelper.getEmbedBuilder(CommandSentence.OMOK_PVP_EXISTS_TO, Color.RED).build();
+            message.editMessageEmbeds(embed).queue();
+            return;
+        }
+        Account to = optionalTo.get();
+        boolean existsTo = omokRoomRepository.existsByAccountOrOpponent(to, to);
+        if (existsTo) {
+            MessageEmbed embed = embedMessageHelper.getEmbedBuilder(CommandSentence.OMOK_PVP_EXISTS_FROM, Color.RED).build();
+            message.editMessageEmbeds(embed).queue();
+            return;
+        }
+
+        MessageEmbed embed = embedMessageHelper.getEmbedBuilder(EmbedSentence.OMOK_PVP_STARTED, Color.GREEN).build();
+        message.editMessageEmbeds(embed).queue();
+
+        Optional<Omok> optionalOmokFrom = omokRepository.findByAccount(from);
+        OmokRoom omokRoom = OmokRoom.builder()
+                .account(from)
+                .opponent(to)
+                .omokSkin((optionalOmokFrom.isPresent() ? optionalOmokFrom.get().getOmokSkin() : null))
+                .build();
+        omokRoomRepository.save(omokRoom);
+
+        String board = createBoard(omokRoom);
+        if (omokRoom.getOmokSkin() != null) {
+            FileUpload fileUpload = FileUpload.fromData(omokSkinService.getBoard(omokRoom));
+            event.getChannel().sendMessage(board).setFiles(fileUpload).queue(boardMessage -> omokRoomService.updateMessageId(omokRoom.getIdx(), boardMessage.getId()));
+        } else event.getChannel().sendMessage(board).queue(boardMessage -> omokRoomService.updateMessageId(omokRoom.getIdx(), boardMessage.getId()));
     }
 
     @Override
@@ -360,13 +413,7 @@ public class OmokCommand implements PieCommand, OmokService {
         if (omokRoom.getOmokSkin() == null && (x > ('A' + (DEFAULT_SIZE - 1)) || y > DEFAULT_SIZE))
             return;
 
-        Message message;
         TextChannel channel = event.getChannel().asTextChannel();
-        try {
-            message = channel.retrieveMessageById(omokRoom.getMessageId()).complete();
-        } catch (Exception e) {
-            return;
-        }
         event.getMessage().delete().queue();
 
         boolean isBlack = omokRoom.getAccount().getId() == account.getId();
@@ -387,13 +434,24 @@ public class OmokCommand implements PieCommand, OmokService {
         omokInfoRepository.save(omokInfo);
         omokRoom.setState((isBlack ? OmokState.WHITE : OmokState.BLACK));
 
-        if (omokRoom.getOmokSkin() != null) {
-            omokSkinService.updateBoard(omokRoom, state, x, y);
-            FileUpload fileUpload = FileUpload.fromData(omokSkinService.getBoard(omokRoom));
-            message.editMessage(createBoard(omokRoom)).setFiles(fileUpload).queue();
-        } else message.editMessage(createBoard(omokRoom)).queue();
+        boolean isWin = isWin(omokRoom, state, x, y);
+        channel.retrieveMessageById(omokRoom.getMessageId()).queue((message) -> {
+            if (omokRoom.getOmokSkin() != null) {
+                omokSkinService.updateBoard(omokRoom, state, x, y, (file) -> {
+                    FileUpload fileUpload = FileUpload.fromData(file);
+                    message.editMessage(createBoard(omokRoom)).setFiles(fileUpload).queue();
+                });
+            } else message.editMessage(createBoard(omokRoom)).queue();
 
-        if (!isWin(omokRoom, state, x, y))
+            if (isWin) {
+                EmbedDto dto = new EmbedDto(EmbedSentence.OMOK_PVP_WIN, Color.GREEN);
+                dto.changeMessage(account.getName());
+
+                embedMessageHelper.replyEmbedMessage(message, dto);
+            }
+        });
+
+        if (!isWin)
             return;
         Account winner = account;
         Account loser;
@@ -406,9 +464,5 @@ public class OmokCommand implements PieCommand, OmokService {
 
         omokInfoRepository.deleteAllByRoom(omokRoom);
         omokRoomRepository.delete(omokRoom);
-
-        EmbedDto dto = new EmbedDto(EmbedSentence.OMOK_PVP_WIN, Color.GREEN);
-        dto.changeMessage(account.getName());
-        EmbedMessageHelper.replyEmbedMessage(message, dto);
     }
 }

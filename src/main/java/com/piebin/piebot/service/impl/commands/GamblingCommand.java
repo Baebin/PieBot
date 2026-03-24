@@ -8,6 +8,7 @@ import com.piebin.piebot.service.GamblingService;
 import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.service.TaskSchedulerService;
 import com.piebin.piebot.utility.*;
+import com.piebin.piebot.utility.impl.EmbedMessageHelperImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -33,6 +34,9 @@ public class GamblingCommand implements PieCommand, GamblingService {
 
     private final TaskSchedulerService taskSchedulerService;
 
+    private final MessageRetriever messageRetriever;
+    private final EmbedMessageHelper embedMessageHelper;
+
     @Override
     @Transactional
     public void execute(MessageReceivedEvent event) {
@@ -51,7 +55,7 @@ public class GamblingCommand implements PieCommand, GamblingService {
                 return;
             }
         }
-        EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.GAMBLING_ARG1);
+        embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.GAMBLING_ARG1);
     }
 
     @Override
@@ -69,23 +73,23 @@ public class GamblingCommand implements PieCommand, GamblingService {
                     if (account.getMoney() < money) {
                         EmbedDto dto = new EmbedDto(CommandSentence.GAMBLING_MUKCHIBA_MONEY_LESS, Color.RED);
                         dto.changeDescription(NumberManager.getNumber(account.getMoney()));
-                        EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+                        embedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
                         return;
                     }
                     EmbedDto dto = new EmbedDto(CommandSentence.GAMBLING_MUKCHIBA_RUN, Color.GREEN);
                     dto.changeMessage(NumberManager.getNumber(money));
-                    Message message = EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
-
-                    message.addReaction(DiscordEmoji.MUKCHIBA_ROCK.getEmoji()).queue();
-                    message.addReaction(DiscordEmoji.MUKCHIBA_SCISSORS.getEmoji()).queue();
-                    message.addReaction(DiscordEmoji.MUKCHIBA_PAPER.getEmoji()).queue();
+                    embedMessageHelper.replyEmbedMessage(event.getMessage(), dto, (embed) -> {
+                        embed.addReaction(DiscordEmoji.MUKCHIBA_ROCK.getEmoji()).queue();
+                        embed.addReaction(DiscordEmoji.MUKCHIBA_SCISSORS.getEmoji()).queue();
+                        embed.addReaction(DiscordEmoji.MUKCHIBA_PAPER.getEmoji()).queue();
+                    });
                     return;
                 }
             } catch (Exception e) {}
         }
         EmbedDto dto = new EmbedDto(CommandSentence.GAMBLING_MUKCHIBA_MONEY_MIN, Color.RED);
         dto.changeDescription(NumberManager.getNumber(account.getMoney()));
-        EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+        embedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
     }
 
     // 묵(0), 찌(1), 빠(2)
@@ -121,7 +125,7 @@ public class GamblingCommand implements PieCommand, GamblingService {
 
     @Override
     @Transactional
-    public void runMukchiba(MessageReactionAddEvent event) {
+    public void runMukchiba(MessageReactionAddEvent event, Message message) {
         // Emoji Check
         int me = getMukchiba(event.getReaction().getEmoji());
         if (me == -1)
@@ -129,16 +133,14 @@ public class GamblingCommand implements PieCommand, GamblingService {
         event.getReaction().removeReaction(event.getUser()).queue();
 
         // Message Check
-        Message message = ReactionManager.getMessage(event);
-        if (message == null)
-            return;
         Message rMessage = message.getReferencedMessage();
         if (rMessage == null || !rMessage.getAuthor().getId().equals(event.getUserId()))
             return;
         // Command Check
-        MessageEmbed embed = ReactionManager.getEmbed(message);
-        if (embed.getFields().size() < 1)
+        Optional<MessageEmbed> optionalMessageEmbed = messageRetriever.getEmbed(message);
+        if (optionalMessageEmbed.isEmpty())
             return;
+        MessageEmbed embed = optionalMessageEmbed.get();
         String name = embed.getFields().get(0).getName();
         if (!name.contains("배팅"))
             return;
@@ -158,7 +160,7 @@ public class GamblingCommand implements PieCommand, GamblingService {
             EmbedDto dto = new EmbedDto(CommandSentence.GAMBLING_SLOTMACHINE_MONEY_LESS, Color.RED);
             dto.changeDescription(NumberManager.getNumber(account.getMoney()));
 
-            EmbedBuilder embedBuilder = EmbedMessageHelper.getEmbedBuilder(dto);
+            EmbedBuilder embedBuilder = embedMessageHelper.getEmbedBuilder(dto);
             message.editMessageEmbeds(embedBuilder.build()).queue();
             return;
         }
@@ -239,7 +241,7 @@ public class GamblingCommand implements PieCommand, GamblingService {
                     if (account.getMoney() < money) {
                         EmbedDto dto = new EmbedDto(CommandSentence.GAMBLING_SLOTMACHINE_MONEY_LESS, Color.RED);
                         dto.changeDescription(NumberManager.getNumber(account.getMoney()));
-                        EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+                        embedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
                         return;
                     }
                     DiscordEmoji[] emojis = {
@@ -285,35 +287,36 @@ public class GamblingCommand implements PieCommand, GamblingService {
                     String randomFruits = "" + DiscordEmoji.FRUIT_RANDOM + DiscordEmoji.FRUIT_RANDOM + DiscordEmoji.FRUIT_RANDOM;
                     String resultFruits = emojis[o1] + " " + emojis[o2] + " " + emojis[o3];
 
-                    Message mainMsg = event.getMessage().replyEmbeds(embedBuilder.build()).complete();
-                    Message subMsg = event.getChannel().sendMessage(randomFruits).complete();
+                    event.getMessage().replyEmbeds(embedBuilder.build()).queue((mainMsg) -> {
+                        event.getChannel().sendMessage(randomFruits).queue((subMsg) -> {
+                            taskSchedulerService.runAfterSeconds(
+                                    () -> {
+                                        embedBuilder.setColor((weight == 0 ? Color.RED : (weight < 1 ? Color.YELLOW : Color.GREEN)));
 
-                    taskSchedulerService.runAfterSeconds(
-                            () -> {
-                                embedBuilder.setColor((weight == 0 ? Color.RED : (weight < 1 ? Color.YELLOW : Color.GREEN)));
+                                        List<String> lines = new ArrayList<>();
+                                        lines.add("결과 : " + (cnt == 1 ? "실패" : cnt + "개 성공"));
+                                        lines.add("적용 배율 : " + weight + "배");
+                                        lines.add("배팅 금액 : " + NumberManager.getNumber(money) + "빙");
+                                        lines.add("받은 금액 : " + NumberManager.getNumber(reward) + "빙");
+                                        lines.add("보유 자산 : " + NumberManager.getNumber(account.getMoney()) + "빙");
 
-                                List<String> lines = new ArrayList<>();
-                                lines.add("결과 : " + (cnt == 1 ? "실패" : cnt + "개 성공"));
-                                lines.add("적용 배율 : " + weight + "배");
-                                lines.add("배팅 금액 : " + NumberManager.getNumber(money) + "빙");
-                                lines.add("받은 금액 : " + NumberManager.getNumber(reward) + "빙");
-                                lines.add("보유 자산 : " + NumberManager.getNumber(account.getMoney()) + "빙");
+                                        String description = String.join("\n", lines);
+                                        embedBuilder.setDescription(description);
 
-                                String description = String.join("\n", lines);
-                                embedBuilder.setDescription(description);
-
-                                subMsg.editMessage(resultFruits).queue();
-                                mainMsg.editMessageEmbeds(embedBuilder.build()).queue();
-                            },
-                            2
-                    );
+                                        subMsg.editMessage(resultFruits).queue();
+                                        mainMsg.editMessageEmbeds(embedBuilder.build()).queue();
+                                    },
+                                    2
+                            );
+                        });
+                    });
                     return;
                 }
             } catch (Exception e) {}
         }
         EmbedDto dto = new EmbedDto(CommandSentence.GAMBLING_SLOTMACHINE_MONEY_MIN, Color.RED);
         dto.changeDescription(NumberManager.getNumber(account.getMoney()));
-        EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+        embedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
     }
 
     @Override
@@ -331,23 +334,23 @@ public class GamblingCommand implements PieCommand, GamblingService {
                     if (account.getMoney() < money) {
                         EmbedDto dto = new EmbedDto(CommandSentence.GAMBLING_HORSE_RACING_MONEY_LESS, Color.RED);
                         dto.changeDescription(NumberManager.getNumber(account.getMoney()));
-                        EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+                        embedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
                         return;
                     }
                     EmbedDto dto = new EmbedDto(CommandSentence.GAMBLING_HORSE_RUN, Color.GREEN);
                     dto.changeMessage(NumberManager.getNumber(money));
-                    Message message = EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
-
-                    message.addReaction(DiscordEmoji.BINGGU.getEmoji()).queue();
-                    message.addReaction(DiscordEmoji.NO_TOUCH_SNAIL.getEmoji()).queue();
-                    message.addReaction(DiscordEmoji.SITTING_FOX.getEmoji()).queue();
+                    embedMessageHelper.replyEmbedMessage(event.getMessage(), dto, (embed) -> {
+                        embed.addReaction(DiscordEmoji.BINGGU.getEmoji()).queue();
+                        embed.addReaction(DiscordEmoji.NO_TOUCH_SNAIL.getEmoji()).queue();
+                        embed.addReaction(DiscordEmoji.SITTING_FOX.getEmoji()).queue();
+                    });
                     return;
                 }
             } catch (Exception e) {}
         }
         EmbedDto dto = new EmbedDto(CommandSentence.GAMBLING_HORSE_RACING_MONEY_MIN, Color.RED);
         dto.changeDescription(NumberManager.getNumber(account.getMoney()));
-        EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+        embedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
     }
 
     private List<Integer> getRandomMeters() {
@@ -433,7 +436,7 @@ public class GamblingCommand implements PieCommand, GamblingService {
 
     @Override
     @Transactional
-    public void runHorseRacing(MessageReactionAddEvent event) {
+    public void runHorseRacing(MessageReactionAddEvent event, Message message) {
         // Emoji Check
         int me = getHorse(event.getReaction().getEmoji());
         if (me == -1)
@@ -441,16 +444,14 @@ public class GamblingCommand implements PieCommand, GamblingService {
         event.getReaction().removeReaction(event.getUser()).queue();
 
         // Message Check
-        Message message = ReactionManager.getMessage(event);
-        if (message == null)
-            return;
         Message rMessage = message.getReferencedMessage();
         if (rMessage == null || !rMessage.getAuthor().getId().equals(event.getUserId()))
             return;
         // Command Check
-        MessageEmbed embed = ReactionManager.getEmbed(message);
-        if (embed.getFields().size() < 1)
+        Optional<MessageEmbed> optionalMessageEmbed = messageRetriever.getEmbed(message);
+        if (optionalMessageEmbed.isEmpty())
             return;
+        MessageEmbed embed = optionalMessageEmbed.get();
         String name = embed.getFields().get(0).getName();
         if (!name.contains("배팅"))
             return;
@@ -471,7 +472,7 @@ public class GamblingCommand implements PieCommand, GamblingService {
             EmbedDto dto = new EmbedDto(CommandSentence.GAMBLING_HORSE_RACING_MONEY_LESS, Color.RED);
             dto.changeDescription(NumberManager.getNumber(account.getMoney()));
 
-            EmbedBuilder embedBuilder = EmbedMessageHelper.getEmbedBuilder(dto);
+            EmbedBuilder embedBuilder = embedMessageHelper.getEmbedBuilder(dto);
             message.editMessageEmbeds(embedBuilder.build()).queue();
             return;
         }

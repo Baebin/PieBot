@@ -9,7 +9,6 @@ import com.piebin.piebot.utility.CommandManager;
 import com.piebin.piebot.utility.EmojiManager;
 import com.piebin.piebot.utility.PageManager;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.stereotype.Service;
@@ -92,9 +91,9 @@ public class HelpCommand implements PieCommand, PageService {
             initPage = PageManager.getPage(PAGES, args.get(2));
 
         TextChannel channel = event.getChannel().asTextChannel();
-        Message message = channel.sendMessageEmbeds(getPage(initPage).build()).complete();
-
-        for (int i = 1; i <= PAGES; i++)
-            message.addReaction(EmojiManager.getEmoji(i)).queue();
+        channel.sendMessageEmbeds(getPage(initPage).build()).queue((message) -> {
+            for (int i = 1; i <= PAGES; i++)
+                message.addReaction(EmojiManager.getEmoji(i)).queue();
+        });
     }
 }

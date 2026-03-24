@@ -8,94 +8,31 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 import java.awt.*;
+import java.util.function.Consumer;
 
-public class EmbedMessageHelper {
-    public static EmbedBuilder getEmbedBuilder(String title, String name, String value, Color color) {
-        EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setTitle(title);
-        embedBuilder.addField(name, value, false);
-        embedBuilder.setColor(color);
-        return embedBuilder;
-    }
+public interface EmbedMessageHelper {
+    EmbedBuilder getEmbedBuilder(String title, String name, String value, Color color);
+    EmbedBuilder getEmbedBuilder(EmbedSentence sentence, Color color);
+    EmbedBuilder getEmbedBuilder(CommandSentence sentence, Color color);
+    EmbedBuilder getEmbedBuilder(EmbedDto dto);
 
-    public static EmbedBuilder getEmbedBuilder(EmbedSentence sentence, Color color) {
-        EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setTitle(sentence.getTitle());
-        embedBuilder.addField(sentence.getMessage(), sentence.getDescription(), false);
-        embedBuilder.setColor(color);
-        return embedBuilder;
-    }
+    void replyEmbedMessage(Message message, String title, String name, String value, Color color);
+    void replyEmbedMessage(Message message, String title, String name, String value, Color color, Consumer<Message> consumer);
+    void replyEmbedMessage(Message message, EmbedDto dto);
+    void replyEmbedMessage(Message message, EmbedDto dto, Consumer<Message> consumer);
+    void replyEmbedMessage(Message message, EmbedSentence sentence, Color color);
+    void replyEmbedMessage(Message message, EmbedSentence sentence, Color color, Consumer<Message> consumer);
+    void replyCommandMessage(Message message, CommandSentence sentence, Color color);
+    void replyCommandMessage(Message message, CommandSentence sentence, Color color, Consumer<Message> consumer);
+    void replyErrorMessage(Message message, String title, String name, String value);
+    void replyErrorMessage(Message message, String title, String name, String value, Consumer<Message> consumer);
+    void replyCommandErrorMessage(Message message, CommandSentence sentence);
+    void replyCommandErrorMessage(Message message, CommandSentence sentence, Consumer<Message> consumer);
 
-    public static EmbedBuilder getEmbedBuilder(CommandSentence sentence, Color color) {
-        EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setTitle(sentence.getTitle());
-        embedBuilder.addField(sentence.getMessage(), sentence.getDescription(), false);
-        embedBuilder.setColor(color);
-        return embedBuilder;
-    }
-
-    public static EmbedBuilder getEmbedBuilder(EmbedDto dto) {
-        EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setTitle(dto.getTitle());
-        embedBuilder.addField(dto.getMessage(), dto.getDescription(), false);
-        embedBuilder.setColor(dto.getColor());
-        return embedBuilder;
-    }
-
-    /*
-    Reply
-    */
-    public static Message replyEmbedMessage(Message message, String title, String name, String value, Color color) {
-        EmbedBuilder embedBuilder = getEmbedBuilder(title, name, value, color);
-        return message.replyEmbeds(embedBuilder.build()).complete();
-    }
-
-    public static Message replyEmbedMessage(Message message, EmbedDto dto) {
-        EmbedBuilder embedBuilder = getEmbedBuilder(dto.getTitle(), dto.getMessage(), dto.getDescription(), dto.getColor());
-        return message.replyEmbeds(embedBuilder.build()).complete();
-    }
-
-    public static Message replyEmbedMessage(Message message, EmbedSentence sentence, Color color) {
-        return replyEmbedMessage(message, sentence.getTitle(), sentence.getMessage(), sentence.getDescription(), color);
-    }
-
-    public static Message replyCommandMessage(Message message, CommandSentence sentence, Color color) {
-        return replyEmbedMessage(message, sentence.getTitle(), sentence.getMessage(), sentence.getDescription(), color);
-    }
-
-    public static Message replyErrorMessage(Message message, String title, String name, String value) {
-        return replyEmbedMessage(message, title, name, value, Color.RED);
-    }
-
-    public static Message replyCommandErrorMessage(Message message, CommandSentence sentence) {
-        return replyEmbedMessage(message, sentence.getTitle(), sentence.getMessage(), sentence.getDescription(), Color.RED);
-    }
-
-    /*
-    Print
-    */
-    public static Message printEmbedMessage(TextChannel channel, String title, String name, String value, Color color) {
-        EmbedBuilder embedBuilder = getEmbedBuilder(title, name, value, color);
-        return channel.sendMessageEmbeds(embedBuilder.build()).complete();
-    }
-
-    public static Message printEmbedMessage(TextChannel channel, EmbedDto dto) {
-        return printEmbedMessage(channel, dto.getTitle(), dto.getMessage(), dto.getDescription(), dto.getColor());
-    }
-
-    public static Message printEmbedMessage(TextChannel channel, EmbedSentence sentence, Color color) {
-        return printEmbedMessage(channel, sentence.getTitle(), sentence.getMessage(), sentence.getDescription(), color);
-    }
-
-    public static Message printCommandMessage(TextChannel channel, CommandSentence sentence, Color color) {
-        return printEmbedMessage(channel, sentence.getTitle(), sentence.getMessage(), sentence.getDescription(), color);
-    }
-
-    public static Message printErrorMessage(TextChannel channel, String title, String name, String value) {
-        return printEmbedMessage(channel, title, name, value, Color.RED);
-    }
-
-    public static Message printCommandErrorMessage(TextChannel channel, CommandSentence sentence) {
-        return printErrorMessage(channel, sentence.getTitle(), sentence.getMessage(), sentence.getDescription());
-    }
+    void printEmbedMessage(TextChannel channel, String title, String name, String value, Color color);
+    void printEmbedMessage(TextChannel channel, EmbedDto dto);
+    void printEmbedMessage(TextChannel channel, EmbedSentence sentence, Color color);
+    void printCommandMessage(TextChannel channel, CommandSentence sentence, Color color);
+    void printErrorMessage(TextChannel channel, String title, String name, String value);
+    void printCommandErrorMessage(TextChannel channel, CommandSentence sentence);
 }

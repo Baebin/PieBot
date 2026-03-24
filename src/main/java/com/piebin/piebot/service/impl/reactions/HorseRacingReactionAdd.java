@@ -2,6 +2,7 @@ package com.piebin.piebot.service.impl.reactions;
 
 import com.piebin.piebot.service.PieReactionAdd;
 import com.piebin.piebot.service.impl.commands.GamblingCommand;
+import com.piebin.piebot.utility.MessageRetriever;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import org.springframework.stereotype.Service;
@@ -11,8 +12,10 @@ import org.springframework.stereotype.Service;
 public class HorseRacingReactionAdd implements PieReactionAdd {
     private final GamblingCommand gamblingCommand;
 
+    private final MessageRetriever messageRetriever;
+
     @Override
     public void execute(MessageReactionAddEvent event) {
-        gamblingCommand.runHorseRacing(event);
+        messageRetriever.retrieveMessage(event, message -> gamblingCommand.runHorseRacing(event, message));
     }
 }

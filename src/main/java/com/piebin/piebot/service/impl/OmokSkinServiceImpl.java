@@ -19,6 +19,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Consumer;
 
 @Slf4j
 @Service
@@ -59,7 +60,7 @@ public class OmokSkinServiceImpl implements OmokSkinService {
 
     @Override
     @Transactional(readOnly = true)
-    public void updateBoard(OmokRoom omokRoom, OmokState omokState, char x, int y) {
+    public void updateBoard(OmokRoom omokRoom, OmokState omokState, char x, int y, Consumer<File> consumer) {
         File file = imageService.getFile("omok", omokRoom.getIdx() + "", "png");
 
         ClassPathResource resourceBoard = new ClassPathResource("omok/" + auroraBoard + ".png");
@@ -79,6 +80,8 @@ public class OmokSkinServiceImpl implements OmokSkinService {
                 graphics2D.drawImage(bufferedImageStone, pX - (auroraStoneSize/2), pY - (auroraStoneSize/2), auroraStoneSize, auroraStoneSize, null);
 
                 ImageIO.write(bufferedImageBoard, "png", file);
+
+                consumer.accept(file);
             } catch (Exception e) {}
         } else {
             try {
@@ -102,6 +105,8 @@ public class OmokSkinServiceImpl implements OmokSkinService {
                 file.mkdirs();
                 ImageIO.write(bufferedImageBoard, "png", file);
                 log.info("Created File: {}" ,file);
+
+                consumer.accept(file);
             } catch (Exception e) {
                 e.printStackTrace();
             }

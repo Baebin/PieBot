@@ -4,11 +4,15 @@ import com.piebin.piebot.model.domain.Account;
 import com.piebin.piebot.model.domain.OmokRoom;
 import com.piebin.piebot.model.entity.OmokState;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 public interface OmokService {
     EmbedBuilder getProfile(Account account);
     String createBoard(OmokRoom omokRoom);
+
+    void createOmokRoom(MessageReactionAddEvent event, Message message);
 
     void addWin(Account account);
     void addTie(Account account);

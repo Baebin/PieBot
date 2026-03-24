@@ -20,7 +20,6 @@ import com.piebin.piebot.service.ShopService;
 import com.piebin.piebot.utility.*;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.stereotype.Service;
@@ -40,6 +39,8 @@ public class ShopCommand implements PieCommand, PageService {
 
     private final ShopService shopService;
     private final ShopRepository shopRepository;
+    
+    private final EmbedMessageHelper embedMessageHelper;
 
     List<String> getShopLines(Shop shop) {
         List<String> lines = new ArrayList<>();
@@ -92,9 +93,10 @@ public class ShopCommand implements PieCommand, PageService {
                 if (args.size() >= 4)
                     initPage = PageManager.getPage(PAGES, args.get(3));
                 TextChannel channel = event.getChannel().asTextChannel();
-                Message message = channel.sendMessageEmbeds(getPage(initPage).build()).complete();
-                for (int i = 1; i <= PAGES; i++)
-                    message.addReaction(EmojiManager.getEmoji(i)).queue();
+                channel.sendMessageEmbeds(getPage(initPage).build()).queue((message) -> {
+                    for (int i = 1; i <= PAGES; i++)
+                        message.addReaction(EmojiManager.getEmoji(i)).queue();
+                });
                 return;
             } else if (args.get(2).equals("정보") || args.get(2).equalsIgnoreCase("info")) {
                 try {
@@ -105,7 +107,7 @@ public class ShopCommand implements PieCommand, PageService {
                     event.getMessage().replyEmbeds(embedBuilder.build()).queue();
                     return;
                 } catch (Exception e) {}
-                EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_IDX_NOT_FOUND);
+                embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_IDX_NOT_FOUND);
                 return;
             } else if (args.get(2).equals("구매") || args.get(2).equalsIgnoreCase("buy")) {
                 try {
@@ -117,7 +119,7 @@ public class ShopCommand implements PieCommand, PageService {
                         amount = 1;
                     }
                     if (amount < 1) {
-                        EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_AMOUNT_INVALID);
+                        embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_AMOUNT_INVALID);
                         return;
                     }
                     Account account = accountRepository.findById(event.getAuthor().getId())
@@ -127,33 +129,33 @@ public class ShopCommand implements PieCommand, PageService {
                             .amount(amount)
                             .build();
                     shopService.buyItem(account, shopItemDto);
-                    EmbedMessageHelper.replyCommandMessage(event.getMessage(), CommandSentence.SHOP_BUY_COMPLETED, Color.GREEN);
+                    embedMessageHelper.replyCommandMessage(event.getMessage(), CommandSentence.SHOP_BUY_COMPLETED, Color.GREEN);
                     return;
                 } catch (ShopException e) {
                     switch (e.getErrorCode()) {
                         case NOT_FOUND:
-                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_IDX_NOT_FOUND);
+                            embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_IDX_NOT_FOUND);
                             break;
                         case INVENTORY_NOT_FOUND:
-                            EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.INVENTORY_NOT_FOUND, Color.RED);
+                            embedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.INVENTORY_NOT_FOUND, Color.RED);
                             break;
                         case MAX_STACK_COUNT_LIMIT:
-                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_MAX_STACK_COUNT_LIMIT);
+                            embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_MAX_STACK_COUNT_LIMIT);
                             break;
                         case DAY_COUNT_LIMIT:
-                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_DAY_COUNT_LIMIT);
+                            embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_DAY_COUNT_LIMIT);
                             break;
                         case WEEK_COUNT_LIMIT:
-                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_WEEK_COUNT_LIMIT);
+                            embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_WEEK_COUNT_LIMIT);
                             break;
                         case MONTH_COUNT_LIMIT:
-                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_MONTH_COUNT_LIMIT);
+                            embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_MONTH_COUNT_LIMIT);
                             break;
                         case ACCOUNT_COUNT_LIMIT:
-                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_ACCOUNT_COUNT_LIMIT);
+                            embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_ACCOUNT_COUNT_LIMIT);
                             break;
                         case TOTAL_COUNT_LIMIT:
-                            EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_TOTAL_COUNT_LIMIT);
+                            embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_TOTAL_COUNT_LIMIT);
                             break;
                         case MONEY_LESS:
                             Optional<Account> optionalAccount = accountRepository.findById(event.getAuthor().getId());
@@ -162,17 +164,17 @@ public class ShopCommand implements PieCommand, PageService {
 
                                 EmbedDto dto = new EmbedDto(CommandSentence.SHOP_MONEY_LESS, Color.RED);
                                 dto.changeDescription(NumberManager.getNumber(account.getMoney()));
-                                EmbedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
-                            } else EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.PROFILE_NOT_FOUND, Color.RED);
+                                embedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+                            } else embedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.PROFILE_NOT_FOUND, Color.RED);
                             break;
                     }
                 } catch (Exception e) {
-                    EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_IDX_NOT_FOUND);
+                    embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_IDX_NOT_FOUND);
                 }
                 return;
             }
         }
-        EmbedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_ARG1);
+        embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.SHOP_ARG1);
     }
 
     @Override

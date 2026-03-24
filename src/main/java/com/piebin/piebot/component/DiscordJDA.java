@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 @Getter
 @Setter
@@ -22,21 +23,17 @@ public class DiscordJDA {
         return Optional.empty();
     }
 
-    public Optional<Message> getMessageByID(String channelId, String messageId) {
+    public void retrieveMessageByID(String channelId, String messageId, Consumer<Message> consumer) {
         try {
             Optional<TextChannel> optional = getTextChannelByID(channelId);
             if (optional.isPresent()) {
                 TextChannel channel = optional.get();
-                return Optional.of(channel.retrieveMessageById(messageId).complete());
+                channel.retrieveMessageById(messageId).queue((message) -> {
+                    if (message == null)
+                        return;
+                    consumer.accept(message);
+                });
             }
         } catch (Exception e) {}
-        return Optional.empty();
-    }
-
-    private Optional<Message> getMessageByID(TextChannel channel, String id) {
-        try {
-            return Optional.of(channel.retrieveMessageById(id).complete());
-        } catch (Exception e) {}
-        return Optional.empty();
     }
 }

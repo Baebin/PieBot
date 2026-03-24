@@ -3,7 +3,7 @@ package com.piebin.piebot.service.impl.commands;
 import com.piebin.piebot.model.dto.embed.EmbedDto;
 import com.piebin.piebot.service.ImageService;
 import com.piebin.piebot.service.PieCommand;
-import com.piebin.piebot.utility.EmbedMessageHelper;
+import com.piebin.piebot.utility.impl.EmbedMessageHelperImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
@@ -24,6 +24,8 @@ import java.io.IOException;
 public class TestCommand implements PieCommand {
     private final ImageService imageService;
 
+    private final EmbedMessageHelperImpl embedMessageHelper;
+
     @Override
     public void execute(MessageReceivedEvent event) {
         Message message = event.getMessage();
@@ -34,7 +36,7 @@ public class TestCommand implements PieCommand {
         dto.setDescription("Babo");
         dto.setColor(Color.CYAN);
 
-        EmbedMessageHelper.replyEmbedMessage(message, dto);
+        embedMessageHelper.replyEmbedMessage(message, dto);
 
         try {
             ClassPathResource resource = new ClassPathResource("omok/omok_skin_aurora_board_x1024.png");

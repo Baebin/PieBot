@@ -1,6 +1,7 @@
 package com.piebin.piebot.service.impl.reactions;
 
 import com.piebin.piebot.model.entity.Sentence;
+import com.piebin.piebot.service.PageReactionAdd;
 import com.piebin.piebot.service.PieReactionAdd;
 import com.piebin.piebot.service.impl.commands.ContributorCommand;
 import lombok.RequiredArgsConstructor;
@@ -10,11 +11,11 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class ContributorReactionAdd implements PieReactionAdd {
+    private final PageReactionAdd pageReactionAdd;
     private final ContributorCommand contributorCommand;
 
     @Override
     public void execute(MessageReactionAddEvent event) {
-        PageReactionAdd pageReactionAdd = new PageReactionAdd(Sentence.CONTRIBUTOR, contributorCommand);
-        pageReactionAdd.execute(event);
+        pageReactionAdd.execute(Sentence.CONTRIBUTOR, contributorCommand, event);
     }
 }

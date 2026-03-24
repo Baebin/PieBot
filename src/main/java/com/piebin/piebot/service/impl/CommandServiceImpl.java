@@ -1,5 +1,6 @@
 package com.piebin.piebot.service.impl;
 
+import com.piebin.piebot.factory.CommandFactory;
 import com.piebin.piebot.model.domain.Account;
 import com.piebin.piebot.model.domain.EasterEgg;
 import com.piebin.piebot.model.domain.EasterEggHistory;
@@ -8,6 +9,7 @@ import com.piebin.piebot.model.dto.embed.EmbedDto;
 import com.piebin.piebot.model.entity.*;
 import com.piebin.piebot.model.repository.*;
 import com.piebin.piebot.service.CommandService;
+import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.service.YachtService;
 import com.piebin.piebot.service.impl.commands.*;
 import com.piebin.piebot.utility.CommandManager;
@@ -57,6 +59,10 @@ public class CommandServiceImpl implements CommandService {
 
     private final TestCommand testCommand;
 
+    private final CommandFactory commandFactory;
+    
+    private final EmbedMessageHelper embedMessageHelper;
+
     private boolean checkArg(String arg, CommandParameter commandParameter) {
         for (String data : commandParameter.getData()) {
             if (
@@ -102,7 +108,7 @@ public class CommandServiceImpl implements CommandService {
             List<EasterEggWord> words = easterEggWordRepository.findByWordIgnoreCase(args.get(1));
             if (!words.isEmpty()) {
                 EasterEgg easterEgg = words.get(0).getEasterEgg();
-                EmbedMessageHelper.printEmbedMessage(channel, easterEgg.getTitle(), easterEgg.getMessage(), easterEgg.getIdx() + Sentence.IS_EASTER_EGG.getMessage(), Color.GREEN);
+                embedMessageHelper.printEmbedMessage(channel, easterEgg.getTitle(), easterEgg.getMessage(), easterEgg.getIdx() + Sentence.IS_EASTER_EGG.getMessage(), Color.GREEN);
                 recordEasterEgg(user.getId(), easterEgg, event.getMessage());
                 return;
             }
@@ -110,8 +116,9 @@ public class CommandServiceImpl implements CommandService {
                 if (!checkArg(args.get(1), parameter))
                     continue;
                 if (!accountRepository.existsById(user.getId())) {
-                    Message message = EmbedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.REGISTER, Color.GREEN);
-                    message.addReaction(UniEmoji.CHECK.getEmoji()).queue();
+                    embedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.REGISTER, Color.GREEN, (embed) -> {
+                        embed.addReaction(UniEmoji.CHECK.getEmoji()).queue();
+                    });
                     return;
                 }
                 if (parameter == CommandParameter.PROFILE)
@@ -154,7 +161,11 @@ public class CommandServiceImpl implements CommandService {
                     easterEggListCommand.execute(event);
                 else if (parameter == CommandParameter.SECRET_TEST)
                     testCommand.execute(event);
-                else parameter.getCommand().execute(event);
+                else {
+                    PieCommand pieCommand = commandFactory.getCommand(parameter);
+                    if (parameter != null)
+                        pieCommand.execute(event);
+                }
                 break;
             }
         }
@@ -183,7 +194,7 @@ public class CommandServiceImpl implements CommandService {
 
             EmbedDto dto = new EmbedDto(EmbedSentence.EASTER_EGG_FIND_ALREADY, Color.CYAN);
             dto.changeMessage(NumberManager.getNumber(reward));
-            EmbedMessageHelper.replyEmbedMessage(message, dto);
+            embedMessageHelper.replyEmbedMessage(message, dto);
         } else {
             // [10'000, 25%]
             long reward = Math.max(10000, (account.getMoney() * 25 / 100));
@@ -198,7 +209,7 @@ public class CommandServiceImpl implements CommandService {
 
             EmbedDto dto = new EmbedDto(EmbedSentence.EASTER_EGG_FIND, Color.CYAN);
             dto.changeMessage(NumberManager.getNumber(reward));
-            EmbedMessageHelper.replyEmbedMessage(message, dto);
+            embedMessageHelper.replyEmbedMessage(message, dto);
         }
     }
 }
