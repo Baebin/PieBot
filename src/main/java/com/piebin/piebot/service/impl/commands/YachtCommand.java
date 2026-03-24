@@ -6,7 +6,6 @@ import com.piebin.piebot.service.YachtCacheService;
 import com.piebin.piebot.service.YachtService;
 import com.piebin.piebot.utility.CommandManager;
 import com.piebin.piebot.utility.EmbedMessageHelper;
-import com.piebin.piebot.utility.impl.EmbedMessageHelperImpl;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.springframework.stereotype.Service;
@@ -19,6 +18,8 @@ import java.util.List;
 public class YachtCommand implements PieCommand {
     private final YachtService yachtService;
     private final YachtCacheService yachtCacheService;
+
+    private final YachtRankCommand yachtRankCommand;
 
     private final EmbedMessageHelper embedMessageHelper;
 
@@ -33,6 +34,14 @@ public class YachtCommand implements PieCommand {
             }
             if (args.get(2).equals("퇴장") || args.get(2).equalsIgnoreCase("quit")) {
                 yachtService.quitYachtRoom(event);
+                return;
+            }
+            if (args.get(2).equals("순위") || args.get(2).equalsIgnoreCase("rank")) {
+                yachtRankCommand.execute(event);
+                return;
+            }
+            if (args.get(2).equals("프로필") || args.get(2).equalsIgnoreCase("profile")) {
+                yachtService.showProfile(event);
                 return;
             }
             if (args.get(2).equals("이어하기") || args.get(2).equalsIgnoreCase("continue")) {

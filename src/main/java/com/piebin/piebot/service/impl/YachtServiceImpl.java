@@ -15,6 +15,7 @@ import com.piebin.piebot.utility.*;
 import kotlin.Pair;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageReaction;
@@ -610,6 +611,36 @@ public class YachtServiceImpl implements YachtService {
 
         // Cache
         yachtCacheService.removeCache(yachtRoom);
+    }
+
+    private EmbedBuilder getProfile(Account account) {
+        Optional<Yacht> optionalYacht = yachtRepository.findByAccount(account);
+
+        Yacht yacht;
+        if (optionalYacht.isEmpty()) {
+            yacht = Yacht.builder()
+                    .account(account)
+                    .build();
+            yachtRepository.save(yacht);
+        }
+        else yacht = optionalYacht.get();
+
+        return ProfileAnalyzer.getProfile(account, yacht.getWin(), yacht.getTie(), yacht.getLose());
+    }
+
+    @Override
+    @Transactional
+    public void showProfile(MessageReceivedEvent event) {
+        Optional<Account> optionalAccount = accountRepository.findById(event.getAuthor().getId());
+        if (optionalAccount.isEmpty())
+            return;
+        FileUpload fileUpload = MessageManager.getProfile(event.getAuthor().getAvatarUrl());
+        if (fileUpload != null) {
+            Account account = optionalAccount.get();
+            event.getMessage().replyFiles(fileUpload)
+                    .setEmbeds(getProfile(account).build())
+                    .queue();
+        } else embedMessageHelper.replyEmbedMessage(event.getMessage(), EmbedSentence.PROFILE_NOT_FOUND, Color.RED);
     }
 
     @Override

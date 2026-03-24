@@ -35,6 +35,7 @@ public interface YachtService {
     void invitePVP(MessageReceivedEvent event);
     void createYachtRoom(MessageReactionAddEvent event, Message message);
     void quitYachtRoom(MessageReceivedEvent event);
+    void showProfile(MessageReceivedEvent event);
     void continueYachtRoom(MessageReceivedEvent event);
 
     Yacht getOrCreateYacht(Account account);

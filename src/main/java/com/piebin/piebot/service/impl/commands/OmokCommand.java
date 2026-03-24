@@ -9,7 +9,6 @@ import com.piebin.piebot.service.OmokSkinService;
 import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.service.OmokService;
 import com.piebin.piebot.utility.*;
-import com.piebin.piebot.utility.impl.EmbedMessageHelperImpl;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -61,22 +60,7 @@ public class OmokCommand implements PieCommand, OmokService {
         }
         else omok = optionalOmok.get();
 
-        EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setTitle(Sentence.PROFILE.getMessage());
-        embedBuilder.setColor(Color.GREEN);
-
-        long total = (omok.getWin() + omok.getTie() + omok.getLose());
-        double odds = 0.0;
-        if (total != 0)
-            odds = (100 * omok.getWin() / total);
-        embedBuilder.addField("이름", account.getName(), false);
-        embedBuilder.addField("승률", String.format("%.2f", odds) + "%", false);
-        String value = NumberManager.getNumber(omok.getWin()) + "승 "
-                + NumberManager.getNumber(omok.getTie()) + "무"
-                + NumberManager.getNumber(omok.getLose()) + "패";
-        embedBuilder.addField("전적", value, false);
-
-        return embedBuilder;
+        return ProfileAnalyzer.getProfile(account, omok.getWin(), omok.getTie(), omok.getLose());
     }
 
     @Override
