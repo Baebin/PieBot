@@ -28,6 +28,8 @@ public class OmokSchedulerServiceImpl implements OmokSchedulerService {
         if (o1.getWin() == o2.getWin()) {
             long total1 = (o1.getWin() + o1.getTie() + o1.getLose());
             long total2 = (o2.getWin() + o2.getTie() + o2.getLose());
+            if (total1 == 0 || total2 == 0)
+                return 0;
             double odds1 = (o1.getWin() / total1);
             double odds2 = (o2.getWin() / total2);
             if (odds1 == odds2)
