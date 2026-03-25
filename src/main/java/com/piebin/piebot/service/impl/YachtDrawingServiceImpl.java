@@ -194,8 +194,6 @@ public class YachtDrawingServiceImpl implements YachtDrawingService {
         file.mkdirs();
         ImageIO.write(bufferedImageBoard, FILE_EXT, file);
 
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        ImageIO.write(bufferedImageBoard, FILE_EXT, byteArrayOutputStream);
-        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        return new FileInputStream(file);
     }
 }
