@@ -21,7 +21,7 @@ public class ProfileAnalyzer {
         embedBuilder.addField("이름", account.getName(), false);
         embedBuilder.addField("승률", String.format("%.2f", odds) + "%", false);
         String value = NumberManager.getNumber(win) + "승 "
-                + NumberManager.getNumber(tie) + "무"
+                + NumberManager.getNumber(tie) + "무 "
                 + NumberManager.getNumber(lose) + "패";
         embedBuilder.addField("전적", value, false);
 
