@@ -10,7 +10,7 @@ import com.piebin.piebot.model.entity.Sentence;
 import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.model.repository.InventoryRepository;
 import com.piebin.piebot.service.PieCommand;
-import com.piebin.piebot.utility.impl.EmbedMessageHelperImpl;
+import com.piebin.piebot.utility.EmbedMessageHelper;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -27,7 +27,7 @@ public class InventoryCommand implements PieCommand {
     private final AccountRepository accountRepository;
     private final InventoryRepository inventoryRepository;
 
-    private final EmbedMessageHelperImpl embedMessageHelper;
+    private final EmbedMessageHelper embedMessageHelper;
 
     @Override
     @Transactional(readOnly = true)

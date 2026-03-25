@@ -9,7 +9,6 @@ import com.piebin.piebot.service.AsyncService;
 import com.piebin.piebot.service.ReactionService;
 import com.piebin.piebot.service.impl.reactions.*;
 import com.piebin.piebot.utility.EmbedMessageHelper;
-import com.piebin.piebot.utility.impl.EmbedMessageHelperImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.*;

@@ -9,7 +9,6 @@ import com.piebin.piebot.model.repository.AttendanceRepository;
 import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.utility.DateTimeManager;
 import com.piebin.piebot.utility.EmbedMessageHelper;
-import com.piebin.piebot.utility.impl.EmbedMessageHelperImpl;
 import com.piebin.piebot.utility.NumberManager;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;

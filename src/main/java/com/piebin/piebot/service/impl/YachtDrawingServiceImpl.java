@@ -4,19 +4,17 @@ import com.piebin.piebot.factory.FontFactory;
 import com.piebin.piebot.factory.YachtLocationFactory;
 import com.piebin.piebot.model.domain.YachtRoom;
 import com.piebin.piebot.model.domain.YachtScoreBoard;
-import com.piebin.piebot.service.ImageService;
+import com.piebin.piebot.service.FileService;
 import com.piebin.piebot.service.YachtDrawingService;
 import kotlin.Pair;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +35,7 @@ public class YachtDrawingServiceImpl implements YachtDrawingService {
     private final FontFactory fontFactory;
     private final YachtLocationFactory yachtLocationFactory;
 
-    private final ImageService imageService;
+    private final FileService fileService;
 
     /*
     File Setting
@@ -134,17 +132,17 @@ public class YachtDrawingServiceImpl implements YachtDrawingService {
 
     @Override
     @Transactional(readOnly = true)
-    public File getBoard(YachtRoom yachtRoom, boolean isNewFile) throws IOException {
+    public InputStream getBoard(YachtRoom yachtRoom, boolean isNewFile) throws IOException {
         if (yachtRoom.getTurnCount() == 0 && yachtRoom.getRollCount() == 0)
-            return imageService.getResourceFile(FILE_PATH, FILE_BOARD, FILE_EXT);
-        File file = imageService.getFile(FILE_PATH, yachtRoom.getIdx() + "", FILE_EXT);
+            return fileService.getResourceStream(FILE_PATH, FILE_BOARD, FILE_EXT);
+        File file = fileService.getFile(FILE_PATH, yachtRoom.getIdx() + "", FILE_EXT);
         if (!isNewFile && file.exists())
-                return file;
+                return new FileInputStream(file);
         YachtScoreBoard accountScoreBoard = yachtRoom.getAccountScoreBoard();
         YachtScoreBoard opponentScoreBoard = yachtRoom.getOpponentScoreBoard();
 
         // Board Image
-        BufferedImage bufferedImageBoard = imageService.getBufferedResourceImage(FILE_PATH, FILE_BOARD, FILE_EXT);
+        BufferedImage bufferedImageBoard = fileService.getBufferedResourceImage(FILE_PATH, FILE_BOARD, FILE_EXT);
 
         // Board Graphics
         Graphics2D graphics2D = bufferedImageBoard.createGraphics();
@@ -163,7 +161,7 @@ public class YachtDrawingServiceImpl implements YachtDrawingService {
 
         List<BufferedImage> bufferedDiceImages = new ArrayList<>();
         for (String name : FILE_DICES_NAMES)
-            bufferedDiceImages.add(imageService.getBufferedResourceImage(FILE_PATH, FILE_DICES_PREFIX + name, FILE_EXT));
+            bufferedDiceImages.add(fileService.getBufferedResourceImage(FILE_PATH, FILE_DICES_PREFIX + name, FILE_EXT));
 
         // Selected Dice
         for (int i = 0; i < yachtRoom.getSelectedDices().size(); i++)
@@ -189,13 +187,15 @@ public class YachtDrawingServiceImpl implements YachtDrawingService {
         File
         */
 
-        // Rezie
+        // Resize
         bufferedImageBoard = resize(bufferedImageBoard, FILE_WIDTH, FILE_HEIGHT);
 
         // Save File
         file.mkdirs();
         ImageIO.write(bufferedImageBoard, FILE_EXT, file);
 
-        return file;
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ImageIO.write(bufferedImageBoard, FILE_EXT, byteArrayOutputStream);
+        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
     }
 }

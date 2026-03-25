@@ -1,34 +1,36 @@
 package com.piebin.piebot.service.impl.test;
 
 import com.piebin.piebot.factory.YachtLocationFactory;
-import com.piebin.piebot.factory.impl.YachtLocationFactoryImpl;
-import com.piebin.piebot.service.ImageService;
-import com.piebin.piebot.service.impl.ImageServiceImpl;
+import com.piebin.piebot.service.FileService;
 import kotlin.Pair;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 @Slf4j
+@SpringBootTest
+@RequiredArgsConstructor
 public class YachtTestService {
     private static final String BOARD = "board";
 
-    private final ImageService imageService = new ImageServiceImpl();
-    private final YachtLocationFactory yachtLocationFactory = new YachtLocationFactoryImpl();
+    private final FileService fileService;
+    private final YachtLocationFactory yachtLocationFactory;
 
     private File getBoard(String boardName) {
-        File file = imageService.getFile("yacht", boardName, "png");
+        File file = fileService.getFile("yacht", boardName, "png");
         if (!file.exists()) {
             ClassPathResource resource = new ClassPathResource("yacht/" + BOARD + ".png");
             try {
@@ -70,10 +72,10 @@ public class YachtTestService {
 
     @Test
     public void testMakeFile() throws IOException, FontFormatException {
-        File file = imageService.getFile("yacht", "board", "png");
+        File file = fileService.getFile("yacht", "board", "png");
         log.info(file.getAbsolutePath());
 
-        BufferedImage bufferedImageBoard = imageService.getBufferedResourceImage("yacht", "board", "png");
+        BufferedImage bufferedImageBoard = fileService.getBufferedResourceImage("yacht", "board", "png");
 
         /*
         Dice
@@ -81,7 +83,7 @@ public class YachtTestService {
 
         List<BufferedImage> bufferedDiceImages = new ArrayList<>();
         for (String name : Arrays.asList("one", "two", "three", "four", "five", "six"))
-            bufferedDiceImages.add(imageService.getBufferedResourceImage("yacht", "dice_" + name, "png"));
+            bufferedDiceImages.add(fileService.getBufferedResourceImage("yacht", "dice_" + name, "png"));
 
         List<Pair<Integer, Integer>> diceLocations = yachtLocationFactory.getSelectedDiceLocations();
 
@@ -96,8 +98,8 @@ public class YachtTestService {
         */
 
         // Font Init
-        FileInputStream fileInputStream = new FileInputStream(imageService.getResourceFile("fonts", "Bazzi", "ttf"));
-        Font font = Font.createFont(Font.TRUETYPE_FONT, fileInputStream).deriveFont(Font.BOLD, 30f);
+        InputStream inputStream = fileService.getResourceStream("fonts", "Bazzi", "ttf");
+        Font font = Font.createFont(Font.TRUETYPE_FONT, inputStream).deriveFont(Font.BOLD, 30f);
         graphics2D.setRenderingHint(
                 RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON

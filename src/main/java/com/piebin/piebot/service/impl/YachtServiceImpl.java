@@ -86,7 +86,7 @@ public class YachtServiceImpl implements YachtService {
     public void sendYachtRoomMessage(MessageChannel channel, YachtRoom yachtRoom, boolean isNewFile) {
         FileUpload fileUpload;
         try {
-            fileUpload = FileUpload.fromData(yachtDrawingService.getBoard(yachtRoom, isNewFile));
+            fileUpload = FileUpload.fromData(yachtDrawingService.getBoard(yachtRoom, isNewFile), yachtRoom.getIdx() + ".png");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -106,7 +106,7 @@ public class YachtServiceImpl implements YachtService {
         asyncService.runAsyncWithCancel(yachtRoom.getMessageId(), () -> {
             FileUpload fileUpload ;
             try {
-                fileUpload = FileUpload.fromData(yachtDrawingService.getBoard(yachtRoom, true));
+                fileUpload = FileUpload.fromData(yachtDrawingService.getBoard(yachtRoom, true), yachtRoom.getIdx() + ".png");
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

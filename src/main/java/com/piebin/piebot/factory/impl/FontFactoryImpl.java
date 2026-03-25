@@ -1,15 +1,14 @@
 package com.piebin.piebot.factory.impl;
 
 import com.piebin.piebot.factory.FontFactory;
-import com.piebin.piebot.service.ImageService;
+import com.piebin.piebot.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.awt.*;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 @Configuration
 @RequiredArgsConstructor
@@ -19,24 +18,20 @@ public class FontFactoryImpl implements FontFactory {
 
     private static final String FONT_BAZZI = "Bazzi";
 
-    private final ImageService imageService;
+    private final FileService fileService;
 
     @Override
     public Font getFont(String name, int style, float size) {
-        FileInputStream fileInputStream;
-        try {
-            fileInputStream = new FileInputStream(imageService.getResourceFile(FILE_PATH, name, FILE_EXT));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        InputStream inputStream = fileService.getResourceStream(FILE_PATH, name, FILE_EXT);
 
         try {
-            return Font.createFont(Font.TRUETYPE_FONT, fileInputStream).deriveFont(style, size);
+            return Font.createFont(Font.TRUETYPE_FONT, inputStream).deriveFont(style, size);
         } catch (FontFormatException e) {
-            throw new RuntimeException(e);
+            // throw new RuntimeException(e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            // throw new RuntimeException(e);
         }
+        return new Font("Arial", Font.PLAIN, (int) size);
     }
 
     @Override

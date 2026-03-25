@@ -7,7 +7,6 @@ import com.piebin.piebot.model.repository.AccountRepository;
 import com.piebin.piebot.service.PieCommand;
 import com.piebin.piebot.utility.DateTimeManager;
 import com.piebin.piebot.utility.EmbedMessageHelper;
-import com.piebin.piebot.utility.impl.EmbedMessageHelperImpl;
 import com.piebin.piebot.utility.MessageManager;
 import com.piebin.piebot.utility.NumberManager;
 import lombok.RequiredArgsConstructor;

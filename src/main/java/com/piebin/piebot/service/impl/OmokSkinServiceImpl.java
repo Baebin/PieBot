@@ -4,11 +4,10 @@ import com.piebin.piebot.model.domain.OmokInfo;
 import com.piebin.piebot.model.domain.OmokRoom;
 import com.piebin.piebot.model.entity.OmokState;
 import com.piebin.piebot.model.repository.OmokInfoRepository;
-import com.piebin.piebot.service.ImageService;
+import com.piebin.piebot.service.FileService;
 import com.piebin.piebot.service.OmokSkinService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.utils.FileUpload;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +33,7 @@ public class OmokSkinServiceImpl implements OmokSkinService {
     private static final int auroraStoneWeight = 49;
     private static final int auroraMaxNumber = 21;
 
-    private final ImageService imageService;
+    private final FileService fileService;
 
     private final OmokInfoRepository omokInfoRepository;
 
@@ -48,7 +47,7 @@ public class OmokSkinServiceImpl implements OmokSkinService {
 
     @Override
     public File getBoard(OmokRoom omokRoom) {
-        File file = imageService.getFile("omok", omokRoom.getIdx() + "", "png");
+        File file = fileService.getFile("omok", omokRoom.getIdx() + "", "png");
         if (!file.exists()) {
             ClassPathResource resource = new ClassPathResource("omok/" + auroraBoard + ".png");
             try {
@@ -61,7 +60,7 @@ public class OmokSkinServiceImpl implements OmokSkinService {
     @Override
     @Transactional(readOnly = true)
     public void updateBoard(OmokRoom omokRoom, OmokState omokState, char x, int y, Consumer<File> consumer) {
-        File file = imageService.getFile("omok", omokRoom.getIdx() + "", "png");
+        File file = fileService.getFile("omok", omokRoom.getIdx() + "", "png");
 
         ClassPathResource resourceBoard = new ClassPathResource("omok/" + auroraBoard + ".png");
         ClassPathResource resourceBlackStone = new ClassPathResource("omok/" + auroraStoneBlack + ".png");
