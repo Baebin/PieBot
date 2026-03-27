@@ -48,6 +48,10 @@ public class YachtCommand implements PieCommand {
                 yachtService.continueYachtRoom(event);
                 return;
             }
+            if (args.get(2).equals("설명서") || args.get(2).equalsIgnoreCase("manual")) {
+                yachtService.showManual(event);
+                return;
+            }
         }
         if (yachtCacheService.hasCache(event.getMessage().getAuthor().getId()))
             return;

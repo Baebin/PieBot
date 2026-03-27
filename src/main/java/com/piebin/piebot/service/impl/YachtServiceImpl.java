@@ -1,6 +1,7 @@
 package com.piebin.piebot.service.impl;
 
 import com.piebin.piebot.component.DiscordJDA;
+import com.piebin.piebot.factory.ManualFactory;
 import com.piebin.piebot.factory.YachtCommandFactory;
 import com.piebin.piebot.model.domain.*;
 import com.piebin.piebot.model.dto.embed.EmbedDto;
@@ -60,6 +61,7 @@ public class YachtServiceImpl implements YachtService {
 
     private final TaskSchedulerService taskSchedulerService;
 
+    private final ManualFactory manualFactory;
     private final YachtCommandFactory yachtCommandFactory;
 
     private final EmbedMessageHelper embedMessageHelper;
@@ -75,7 +77,7 @@ public class YachtServiceImpl implements YachtService {
                 + MessageManager.getMention((yachtRoom.getTurnCount() % 2 == 0 ? yachtRoom.getAccount() : yachtRoom.getOpponent()).getId())
                 + " **(" + yachtRoom.getRollCount() + "/3)**"
         );
-        lines.add("> *ex) z 1, z 3, z 5, z 포커, z 풀하우스, etc.");
+        lines.add("> *ex) z 1, z 3, z 5, z 초이스, z 포카, z 풀하, z 스스, z 라스, z 요트 etc.");
 
         String board = String.join("\n", lines);
         return board;
@@ -658,6 +660,12 @@ public class YachtServiceImpl implements YachtService {
         YachtRoom yachtRoom = optionalYachtRoom.get();
         // Discrod Message
         sendYachtRoomMessage(event.getChannel(), yachtRoom, false);
+    }
+
+    @Override
+    public void showManual(MessageReceivedEvent event) {
+        for (EmbedDto embedDto : manualFactory.getYachtManualEmbedDtoList())
+            embedMessageHelper.replyEmbedMessage(event.getMessage(), embedDto);
     }
 
     @Override

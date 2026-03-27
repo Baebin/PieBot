@@ -33,6 +33,7 @@ public enum CommandParameter {
     YACHT_RANK(null, new String[] { "yacht", "요트" }, "[rank/순위] [페이지]", "유저들의 요트 다이스 게임 순위를 보여줍니다.", CommandMode.EQUAL),
     YACHT_PROFILE(null, new String[] { "yacht", "요트" }, "[profile/프로필]", "요트 다이스 게임 프로필을 보여줍니다.", CommandMode.EQUAL),
     YACHT_CONTINUE(null, new String[] { "yacht", "요트" }, "[yacht/요트] [continue/이어하기]", "요트 다이스 게임을 재개합니다.", CommandMode.EQUAL),
+    YACHT_MANUAL(null, new String[] { "yacht", "설명서" }, "[yacht/요트] [manual/설명서]", "요트 다이스 게임의 설명서를 보여줍니다.", CommandMode.EQUAL),
 
     GAMBLING_MUKCHIBA(null, new String[] { "gambling", "도박" }, "[묵찌빠] [금액]", "묵찌빠 게임을 시작합니다.", CommandMode.EQUAL),
     GAMBLING_SLOTMACHINE(null, new String[] { "gambling", "도박" }, "[슬롯머신] [금액]", "슬롯머신 게임을 시작합니다.", CommandMode.EQUAL),

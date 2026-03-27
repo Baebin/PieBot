@@ -37,6 +37,7 @@ public interface YachtService {
     void quitYachtRoom(MessageReceivedEvent event);
     void showProfile(MessageReceivedEvent event);
     void continueYachtRoom(MessageReceivedEvent event);
+    void showManual(MessageReceivedEvent event);
 
     Yacht getOrCreateYacht(Account account);
     void addWin(Account account);

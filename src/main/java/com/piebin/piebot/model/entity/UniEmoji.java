@@ -37,4 +37,9 @@ public enum UniEmoji {
     public Emoji getEmoji() {
         return Emoji.fromUnicode(this.emoji);
     }
+
+    @Override
+    public String toString() {
+        return emoji;
+    }
 }

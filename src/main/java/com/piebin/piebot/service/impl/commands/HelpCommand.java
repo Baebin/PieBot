@@ -56,6 +56,7 @@ public class HelpCommand implements PieCommand, PageService {
                 addField(embedBuilder, CommandParameter.YACHT_RANK);
                 addField(embedBuilder, CommandParameter.YACHT_PROFILE);
                 addField(embedBuilder, CommandParameter.YACHT_CONTINUE);
+                addField(embedBuilder, CommandParameter.YACHT_MANUAL);
                 embedBuilder.addBlankField(false);
                 addField(embedBuilder, CommandParameter.GAMBLING_MUKCHIBA);
                 addField(embedBuilder, CommandParameter.GAMBLING_SLOTMACHINE);
