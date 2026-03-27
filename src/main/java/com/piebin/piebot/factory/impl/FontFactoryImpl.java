@@ -44,4 +44,15 @@ public class FontFactoryImpl implements FontFactory {
     public Font getBazziFont30fBold() {
         return getBazziFont(Font.BOLD, 30);
     }
+
+    @Override
+    public Font getArialFont(int style, float size) {
+        return new Font("Arial", style, (int) size);
+    }
+
+    @Bean
+    @Override
+    public Font getArialFont30fBold() {
+        return getArialFont(Font.BOLD, 30);
+    }
 }
