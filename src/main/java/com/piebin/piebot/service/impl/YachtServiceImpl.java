@@ -193,12 +193,12 @@ public class YachtServiceImpl implements YachtService {
         discordJDA.retrieveMessageByID(yachtRoom.getChannelId(), yachtRoom.getMessageId(), (message) -> {
             EmbedDto dto;
             if (result == 0) {
-                dto = new EmbedDto(EmbedSentence.YACHT_PVP_WIN, Color.GREEN);
-                dto.changeMessage(result == 1 ? account.getName() : opponent.getName());
-            }
-            else {
                 dto = new EmbedDto(EmbedSentence.YACHT_PVP_TIE, Color.GREEN);
                 dto.changeMessage(account.getName(), opponent.getName());
+            }
+            else {
+                dto = new EmbedDto(EmbedSentence.YACHT_PVP_WIN, Color.GREEN);
+                dto.changeMessage(result == 1 ? account.getName() : opponent.getName());
             }
             embedMessageHelper.replyEmbedMessage(message, dto);
         });
