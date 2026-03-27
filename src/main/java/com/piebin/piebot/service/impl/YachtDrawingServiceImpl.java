@@ -68,11 +68,12 @@ public class YachtDrawingServiceImpl implements YachtDrawingService {
     }
 
     private void drawString(Graphics2D graphics2D, String text, Pair<Integer, Integer> loc, boolean isOpponent) {
+        int weight = 5 - ((text.length() - 1) * 9);
         graphics2D.drawString(
                 text,
                 loc.component1()
                         + (isOpponent ? yachtLocationFactory.getSectionXWeight() : 0)
-                        - (text.length() + 1) * 8 + 4,
+                        + weight,
                 loc.component2());
     }
 
@@ -152,7 +153,7 @@ public class YachtDrawingServiceImpl implements YachtDrawingService {
                 RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON
         );
-        graphics2D.setFont(fontFactory.getArialFont30fBold());
+        graphics2D.setFont(fontFactory.getArialFont30f());
         graphics2D.setColor(Color.BLACK);
 
         /*

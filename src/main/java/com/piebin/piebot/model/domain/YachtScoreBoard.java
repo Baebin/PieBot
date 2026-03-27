@@ -53,7 +53,7 @@ public class YachtScoreBoard {
 
     public int getTotalScores() {
         int numberScores = (aces != null ? aces : 0) + (deuces != null ? deuces : 0) + (threes != null ? threes : 0)
-                + (fours != null ? fours : 0) + (fives != null ? fives : 0);
+                + (fours != null ? fours : 0) + (fives != null ? fives : 0) + (sixes != null ? sixes : 0);
         return (
                 numberScores
                         + (bonus != null ? bonus : 0)

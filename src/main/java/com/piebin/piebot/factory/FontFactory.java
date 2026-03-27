@@ -7,5 +7,6 @@ public interface FontFactory {
     Font getBazziFont(int style, float size);
     Font getBazziFont30fBold();
     Font getArialFont(int style, float size);
+    Font getArialFont30f();
     Font getArialFont30fBold();
 }

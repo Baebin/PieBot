@@ -52,6 +52,12 @@ public class FontFactoryImpl implements FontFactory {
 
     @Bean
     @Override
+    public Font getArialFont30f() {
+        return getArialFont(Font.PLAIN, 30);
+    }
+
+    @Bean
+    @Override
     public Font getArialFont30fBold() {
         return getArialFont(Font.BOLD, 30);
     }
