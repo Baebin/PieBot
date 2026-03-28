@@ -1,0 +1,69 @@
+package com.piebin.piebot.global.service.impl.commands;
+
+import com.piebin.piebot.global.domain.Account;
+import com.piebin.piebot.global.entity.CommandSentence;
+import com.piebin.piebot.global.repository.AccountRepository;
+import com.piebin.piebot.global.dto.embed.EmbedDto;
+import com.piebin.piebot.global.service.PieCommand;
+import com.piebin.piebot.global.utility.CommandManager;
+import com.piebin.piebot.global.utility.EmbedMessageHelper;
+import com.piebin.piebot.global.utility.NumberManager;
+import lombok.RequiredArgsConstructor;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.awt.*;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class PayCommand implements PieCommand {
+    private final AccountRepository accountRepository;
+
+    private final EmbedMessageHelper embedMessageHelper;
+
+    @Override
+    @Transactional
+    public void execute(MessageReceivedEvent event) {
+        List<String> args = CommandManager.getArgs(event);
+
+        if (args.size() >= 3) {
+            String userId = CommandManager.getMentionId(args.get(2));
+            if (event.getAuthor().getId().equals(userId)) {
+                embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.PAY_ARG1_SELF);
+                return;
+            }
+            Optional<Account> optionalFrom = accountRepository.findById(event.getAuthor().getId());
+            Optional<Account> optionalTo = accountRepository.findById(userId);
+            if (optionalFrom.isPresent() && optionalTo.isPresent()) {
+                if (args.size() >= 4) {
+                    Account from = optionalFrom.get();
+                    Account to = optionalTo.get();
+                    try {
+                        long money = Long.parseLong(args.get(3));
+                        if (1 <= money) {
+                            if (money <= from.getMoney()) {
+                                from.setMoney(from.getMoney() - money);
+                                if (money * 0.9 >= 1) money *= 0.9;
+
+                                to.setMoney(to.getMoney() + money);
+
+                                EmbedDto dto = new EmbedDto(CommandSentence.PAY_COMPLETED, Color.GREEN);
+                                dto.changeMessage(NumberManager.getNumber(money));
+                                embedMessageHelper.replyEmbedMessage(event.getMessage(), dto);
+                                return;
+                            }
+                            embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.PAY_ARG2_LESS);
+                            return;
+                        }
+                    } catch (Exception e) {}
+                }
+                embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.PAY_ARG2_MIN);
+                return;
+            }
+        }
+        embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.PAY_ARG1);
+    }
+}

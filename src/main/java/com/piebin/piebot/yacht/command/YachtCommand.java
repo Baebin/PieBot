@@ -1,0 +1,60 @@
+package com.piebin.piebot.yacht.command;
+
+import com.piebin.piebot.global.entity.CommandSentence;
+import com.piebin.piebot.global.utility.EmbedMessageHelper;
+import com.piebin.piebot.global.service.PieCommand;
+import com.piebin.piebot.yacht.service.YachtCacheService;
+import com.piebin.piebot.yacht.service.YachtService;
+import com.piebin.piebot.global.utility.CommandManager;
+import lombok.RequiredArgsConstructor;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class YachtCommand implements PieCommand {
+    private final YachtService yachtService;
+    private final YachtCacheService yachtCacheService;
+
+    private final YachtRankCommand yachtRankCommand;
+
+    private final EmbedMessageHelper embedMessageHelper;
+
+    @Override
+    @Transactional
+    public void execute(MessageReceivedEvent event) {
+        List<String> args = CommandManager.getArgs(event);
+        if (args.size() >= 3) {
+            if (args.get(2).equals("대전") || args.get(2).equalsIgnoreCase("pvp")) {
+                yachtService.invitePVP(event);
+                return;
+            }
+            if (args.get(2).equals("퇴장") || args.get(2).equalsIgnoreCase("quit")) {
+                yachtService.quitYachtRoom(event);
+                return;
+            }
+            if (args.get(2).equals("순위") || args.get(2).equalsIgnoreCase("rank")) {
+                yachtRankCommand.execute(event);
+                return;
+            }
+            if (args.get(2).equals("프로필") || args.get(2).equalsIgnoreCase("profile")) {
+                yachtService.showProfile(event);
+                return;
+            }
+            if (args.get(2).equals("이어하기") || args.get(2).equalsIgnoreCase("continue")) {
+                yachtService.continueYachtRoom(event);
+                return;
+            }
+            if (args.get(2).equals("설명서") || args.get(2).equalsIgnoreCase("manual")) {
+                yachtService.showManual(event);
+                return;
+            }
+        }
+        if (yachtCacheService.hasCache(event.getMessage().getAuthor().getId()))
+            return;
+        embedMessageHelper.replyCommandErrorMessage(event.getMessage(), CommandSentence.YACHT_ARG1);
+    }
+}

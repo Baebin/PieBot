@@ -1,0 +1,81 @@
+package com.piebin.piebot.omok.command;
+
+import com.piebin.piebot.global.entity.Sentence;
+import com.piebin.piebot.omok.domain.Omok;
+import com.piebin.piebot.global.entity.UniEmoji;
+import com.piebin.piebot.global.service.PageService;
+import com.piebin.piebot.global.service.PieCommand;
+import com.piebin.piebot.omok.scheduler.impl.OmokSchedulerServiceImpl;
+import com.piebin.piebot.global.utility.CommandManager;
+import com.piebin.piebot.global.utility.DateTimeManager;
+import com.piebin.piebot.global.utility.NumberManager;
+import com.piebin.piebot.global.utility.PageManager;
+import lombok.RequiredArgsConstructor;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.awt.*;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class OmokRankCommand implements PieCommand, PageService {
+    private final int OFFSET = 10;
+
+    private void addField(EmbedBuilder embedBuilder, int rank) {
+        if (OmokSchedulerServiceImpl.omokRankList.size() < rank) {
+            embedBuilder.addBlankField(true);
+            return;
+        }
+        Omok omok = OmokSchedulerServiceImpl.omokRankList.get(rank - 1);
+        long total = (omok.getWin() + omok.getTie() + omok.getLose());
+        double odds = 0.0;
+        if (total != 0)
+            odds = (100 * omok.getWin() / total);
+        String value = NumberManager.getNumber(omok.getWin()) + "승 "
+                + NumberManager.getNumber(omok.getTie()) + "무 "
+                + NumberManager.getNumber(omok.getLose()) + "패 "
+                + " (" + String.format("%.2f", odds) + "%)";
+        embedBuilder.addField(rank + "등. " + omok.getAccount().getName(), value, true);
+    }
+
+    @Override
+    public EmbedBuilder getPage(int page) {
+        page = PageManager.getPage(OmokSchedulerServiceImpl.omokRankList.size(), OFFSET, page);
+
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+        embedBuilder.setTitle(Sentence.OMOK_RANK.getMessage() + " - " + page);
+        embedBuilder.setColor(Color.GREEN);
+
+        int from = (page - 1) * OFFSET + 1;
+        int to = (page) * OFFSET;
+        for (int rank = from; rank <= to; rank++)
+            addField(embedBuilder, rank);
+        embedBuilder.addField(Sentence.RANK_REFRESH.getMessage(), DateTimeManager.getDate(OmokSchedulerServiceImpl.omokRankDateTime), false);
+        return embedBuilder;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void execute(MessageReceivedEvent event) {
+        List<String> args = CommandManager.getArgs(event);
+
+        int initPage = 1;
+        if (args.size() >= 4) {
+            int totalCnt = OmokSchedulerServiceImpl.omokRankList.size();
+            initPage = PageManager.getPage(totalCnt, OFFSET, args.get(3));
+        }
+
+        TextChannel channel = event.getChannel().asTextChannel();
+        channel.sendMessageEmbeds(getPage(initPage).build()).queue((message) -> {
+            message.addReaction(UniEmoji.ARROW_LEFT_DOUBLE.getEmoji()).queue();
+            message.addReaction(UniEmoji.ARROW_LEFT.getEmoji()).queue();
+            message.addReaction(UniEmoji.ARROW_REFRESH.getEmoji()).queue();
+            message.addReaction(UniEmoji.ARROW_RIGHT.getEmoji()).queue();
+            message.addReaction(UniEmoji.ARROW_RIGHT_DOUBLE.getEmoji()).queue();
+        });
+    }
+}
